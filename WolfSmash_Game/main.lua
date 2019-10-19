@@ -76,9 +76,6 @@ function textoTemporario()
 
     -------------TESTE JOYSTICK-----------------------
     joysticks = love.joystick.getJoysticks()
-    if joysticks[2] then
-        love.graphics.print("teste 1 2 3", 400, 400)
-    end
     for i, joystick in ipairs(joysticks) do
         
         love.graphics.print("-->Joysticks detectados: ", 500, 55)
@@ -157,7 +154,6 @@ function textoTemporario()
             love.graphics.print("Start", 530,  280)
             love.event.quit()
         end
-        
     end
     ------------------------------------------
 
@@ -181,7 +177,6 @@ function isUnderneath(normalY, tag1, tag2, objeto1, objeto2) --Retorna o objeto 
 end
 
 function beginContact(a, b, coll) --Inicio do contato 
-    contato = coll
     local x, y = coll:getNormal()
     local tagA = a:getUserData()
     local tagB = b:getUserData()
