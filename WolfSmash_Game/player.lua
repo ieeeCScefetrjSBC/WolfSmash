@@ -1,12 +1,12 @@
 local anim8 = require 'anim8'
 -- Class Player
 Player = {}
-Player.__index = Player 
+Player.__index = Player
 
 function newPlayer(tag, world, joystick, pathImage, posX, posY, velX ,jumpForce, life)
     local p = {}
     p.tag = tag --Importante para a detecção de Colisões
-    p.world = world 
+    p.world = world
     p.joystick = joystick
     p.image = love.graphics.newImage(pathImage)
     local g = anim8.newGrid(64, 64, p.image:getWidth(), p.image:getHeight())
@@ -21,26 +21,26 @@ function newPlayer(tag, world, joystick, pathImage, posX, posY, velX ,jumpForce,
     p.jumpForce = jumpForce * -1 --Força do Pulo (está negativo por conta do eixo Y crescer para baixo)
     p.life = life --Vida do Player
     p.isAlive = true
-    p.isGrounded = false --Está tocando o chão? true = sim 
+    p.isGrounded = false --Está tocando o chão? true = sim
 
-    p.body = love.physics.newBody(p.world, posX , posY, "dynamic") --Cria o corpo dinamico na posição e mundo indicado 
-    p.body:setFixedRotation(true) --Faz o corpo não ficar girando 
+    p.body = love.physics.newBody(p.world, posX , posY, "dynamic") --Cria o corpo dinamico na posição e mundo indicado
+    p.body:setFixedRotation(true) --Faz o corpo não ficar girando
     p.shape = love.physics.newRectangleShape(0, 0, 64,64)
     p.fixture = love.physics.newFixture(p.body, p.shape, 1)
     --p.fixture:setRestitution(0.5) --Faz o objeto quicar
-    p.fixture:setUserData(p.tag) --Importante para a detecção de Colisões 
+    p.fixture:setUserData(p.tag) --Importante para a detecção de Colisões
 
     p.animation.current = p.animation.idle
-    
+
     return setmetatable(p, Player) --Retorna uma instância da Classe Player
 end
 
 function Player:update(dt)
     self.animation.current:update(dt)
-    
+
     --------Verifica se está morto----------
     if self.life <= 0 then --Se a vida do player for menor ou igual a 0
-        self.isAlive = false 
+        self.isAlive = false
         self.body:setActive(false) --Desativa o Player quando estiver morto
     end
     ----------------------------------------
@@ -81,7 +81,8 @@ function Player:setKeyboardControls(right, left, up)--Definir os controles a par
     end
     if love.keyboard.isDown(up) then
         if self.isGrounded then
-            self.body:applyLinearImpulse(0, self.jumpForce)
+            local x, y  = self.body:getLinearVelocity()
+            self.body:setLinearVelocity(x , self.jumpForce)
             self.animation.jumping = true
         end
     end
@@ -100,7 +101,7 @@ function Player:drawMe(r, g, b)
     end
 end
 
-function Player:applyDamage(damage) --Aplica o dano indicado ao player 
+function Player:applyDamage(damage) --Aplica o dano indicado ao player
         self.life = self.life - damage
 end
 
@@ -113,17 +114,17 @@ function Player:setIsGrounded(collisionTag1, collisionTag2, tagGround, value) --
 end
 
 function Player:touchingOver(collisionTag1, collisionTag2, normalY) --Função verifica se o player está tocando o objeto por cima
-    if (collisionTag1 == self.tag) then        
+    if (collisionTag1 == self.tag) then
         if(normalY < 0) then
             return false
         elseif(normalY > 0) then
             return true
-        end    
+        end
     elseif (collisionTag2 == self.tag) then
         if(normalY < 0) then
-            return  true 
+            return  true
         elseif(normalY > 0) then
-             return false 
+             return false
         end
     end
     return nil
