@@ -28,7 +28,8 @@ function newPlayer(tag, world, joystick, pathImage, posX, posY, velX ,jumpForce,
     p.shape = love.physics.newRectangleShape(0, 0, 64,64)
     p.fixture = love.physics.newFixture(p.body, p.shape, 1)
     --p.fixture:setRestitution(0.5) --Faz o objeto quicar
-    p.fixture:setUserData(p.tag) --Importante para a detecção de Colisões
+
+    p.fixture:setUserData(p) -- Salva a lista com os atributos do Player. 
 
     p.animation.current = p.animation.idle
 
@@ -65,7 +66,8 @@ function Player:update(dt)
         local botaoA = self.joystick:isDown(1)
         if botaoA then
             if self.isGrounded then
-                self.body:applyLinearImpulse(0, self.jumpForce)
+                local x, y = self.body:getLinearVelocity()
+                self.body:setLinearVelocity(x , self.jumpForce)
                 self.animation.jumping = true
             end
         end
@@ -81,7 +83,7 @@ function Player:setKeyboardControls(right, left, up)--Definir os controles a par
     end
     if love.keyboard.isDown(up) then
         if self.isGrounded then
-            local x, y  = self.body:getLinearVelocity()
+            local x, y = self.body:getLinearVelocity()
             self.body:setLinearVelocity(x , self.jumpForce)
             self.animation.jumping = true
         end
@@ -105,27 +107,10 @@ function Player:applyDamage(damage) --Aplica o dano indicado ao player
         self.life = self.life - damage
 end
 
-function Player:setIsGrounded(collisionTag1, collisionTag2, tagGround, value) --Função especifica para mudar o estado "isGround" do player.
-    if(collisionTag1 == self.tag or collisionTag2 == self.tag) then
-        if (collisionTag1 == tagGround or collisionTag2 == tagGround) then
-            self.isGrounded = value
-        end
-    end
+function Player:setIsGrounded(value) --Função especifica para mudar o estado "isGround" do player.
+    self.isGrounded = value
 end
 
-function Player:touchingOver(collisionTag1, collisionTag2, normalY) --Função verifica se o player está tocando o objeto por cima
-    if (collisionTag1 == self.tag) then
-        if(normalY < 0) then
-            return false
-        elseif(normalY > 0) then
-            return true
-        end
-    elseif (collisionTag2 == self.tag) then
-        if(normalY < 0) then
-            return  true
-        elseif(normalY > 0) then
-             return false
-        end
-    end
-    return nil
+function Player:type()
+    return "Player"
 end

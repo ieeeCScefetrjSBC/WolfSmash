@@ -1,42 +1,51 @@
-function love.conf( t )
-    t.identity = nil                -- define o local do save do jogo
-    t.version = "11.2"              -- A versão do love2d para qual o jogo foi feito.
-    t.console = false               -- Funciona só no windows, permite mostrar ou esconder o console quanddo o jogo é aberto
-    t.extenalstorage = true         -- Salvar e ler arquivos externos em dispositivo android
-
-    t.window.title = "Smash da Byte" -- título que aparece na janela do jogo
-    t.window.icon = nil             -- Definir o Icone do jogo através de um caminho.
-    t.window.widht = 800            -- Define a largura da janela do jogo
-    t.window.height = 600           -- Define a Altura da janela do jogo
-    t.window.borderless = false     -- Desabilita a borda da janela caso seja true
-    t.window.resizeble = false      -- Habilita o redimencionamento da tela caso seja true
-    t.window.minwidht = 400         -- Estabelece o valor minimo da largura da janela se o resizeble for true.
-    t.window.minheight = 300        -- Estabelece o valor minimo da altura da janela se o resizeble for true.
-    t.window.fullscreen = false     -- deixa em tela cheia se for true
-    t.window.fullscreentype = "desktop"
-    t.window.vsync = false         -- Sincronização vertical
-    t.window.msaa = 0              -- Anti-aliasing
-    t.window.display = 1           --
-    t.window.x = nil               -- posição x da janela do jogo
-    t.window.y = nil               -- posição y da janela do jogo
-
-
-    --todos os módulos a baixo, vem por padrão com o valor True
-    t.modules.audio = true          -- Ativa ou desativa recursos de audio
-    t.modules.event = true          -- desativa eventos como teclas precionadas, toques e etc.
-    t.modules.graphics = true       -- habilita a renderização de gráficos na tela do software
-    t.modules.image = true          -- 
-    t.modules.joystick = true       -- Permite a utilização de controle
-    t.modules.kayboard = true       -- Permite a utilização do teclado
-    t.modules.math = true           -- Permite a utilização de calculos matemáticos
-    t.modules.mouse = true          -- Permite a utilização de mouse
-    t.modules.physics = true        -- Permite a utilização da simulação de fisica
-    t.modules.sound = true          -- habilita a decodificação de arquivos de som 
-    t.modules.system = true 
-    t.modules.time = true
-    t.modules.touch = false         -- reconhece o toque na tela
-    t.modules.video = true          -- permite a decodificação e controle dos aquivos de video
-    t.modules.window = true 
-    t.modules.thread = true         -- habilita processos paralelos em multiprocessadores 
-
+function love.conf(t)
+    t.identity = nil                    -- The name of the save directory (string)
+    t.appendidentity = false            -- Search files in source directory before save directory (boolean)
+    t.version = "11.2"                  -- The LÖVE version this game was made for (string)
+    t.console = false                   -- Attach a console (boolean, Windows only)
+    t.accelerometerjoystick = false     -- Enable the accelerometer on iOS and Android by exposing it as a Joystick (boolean)
+    t.externalstorage = false           -- True to save files (and read from the save directory) in external storage on Android (boolean) 
+    t.gammacorrect = false              -- Enable gamma-correct rendering, when supported by the system (boolean)
+ 
+    t.audio.mic = false                 -- Request and use microphone capabilities in Android (boolean)
+    t.audio.mixwithsystem = true        -- Keep background music playing when opening LOVE (boolean, iOS and Android only)
+ 
+    t.window.title = "Smash da Byte"    -- The window title (string)
+    t.window.icon = nil                 -- Filepath to an image to use as the window's icon (string)
+    t.window.width = 1200               -- The window width (number)
+    t.window.height = 700               -- The window height (number)
+    t.window.borderless = false         -- Remove all border visuals from the window (boolean)
+    t.window.resizable = false          -- Let the window be user-resizable (boolean)
+    t.window.minwidth = 1               -- Minimum window width if the window is resizable (number)
+    t.window.minheight = 1              -- Minimum window height if the window is resizable (number)
+    t.window.fullscreen = false         -- Enable fullscreen (boolean)
+    t.window.fullscreentype = "desktop" -- Choose between "desktop" fullscreen or "exclusive" fullscreen mode (string)
+    t.window.usedpiscale = true         -- Enable automatic DPI scaling (boolean)
+    t.window.vsync = 1                  -- Vertical sync mode (number)
+    t.window.msaa = 0                   -- The number of samples to use with multi-sampled antialiasing (number)
+    t.window.depth = nil                -- The number of bits per sample in the depth buffer
+    t.window.stencil = nil              -- The number of bits per sample in the stencil buffer
+    t.window.display = 1                -- Index of the monitor to show the window in (number)
+    t.window.highdpi = false            -- Enable high-dpi mode for the window on a Retina display (boolean)
+    t.window.x = nil                    -- The x-coordinate of the window's position in the specified display (number)
+    t.window.y = nil                    -- The y-coordinate of the window's position in the specified display (number)
+ 
+    t.modules.audio = true              -- Enable the audio module (boolean)
+    t.modules.data = true               -- Enable the data module (boolean)
+    t.modules.event = true              -- Enable the event module (boolean)
+    t.modules.font = true               -- Enable the font module (boolean)
+    t.modules.graphics = true           -- Enable the graphics module (boolean)
+    t.modules.image = true              -- Enable the image module (boolean)
+    t.modules.joystick = true           -- Enable the joystick module (boolean)
+    t.modules.keyboard = true           -- Enable the keyboard module (boolean)
+    t.modules.math = true               -- Enable the math module (boolean)
+    t.modules.mouse = true              -- Enable the mouse module (boolean)
+    t.modules.physics = true            -- Enable the physics module (boolean)
+    t.modules.sound = true              -- Enable the sound module (boolean)
+    t.modules.system = true             -- Enable the system module (boolean)
+    t.modules.thread = true             -- Enable the thread module (boolean)
+    t.modules.timer = true              -- Enable the timer module (boolean), Disabling it will result 0 delta time in love.update
+    t.modules.touch = true              -- Enable the touch module (boolean)
+    t.modules.video = true              -- Enable the video module (boolean)
+    t.modules.window = true             -- Enable the window module (boolean)
 end

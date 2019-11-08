@@ -1,70 +1,62 @@
 require("player")
+require("floor")
+require("bloco")
 
 function love.load()
+    love.mouse.setVisible(false) --Deixa o cursos do mouse invisível 
     love.physics.setMeter( 64 ) -- 1 metro = 64 pixels
     world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
-    world:setCallbacks(beginContact, endContact, nil, nil) --Detecta contatos no mundo
+    world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
 
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
     forca = 500
-    player0 = newPlayer("player0", world, joysticks[1], "imagens/Spritesheet.png", 325, 325, 400 ,forca, 3) --cria um "player" definido no aquivo player.lua
-
-    player1 = newPlayer("player1", world, joysticks[2], "imagens/Spritesheet.png", 425, 325, 400 ,forca, 3) --cria um "player" definido no aquivo player.lua
-
-
+    players= {
+        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritesheet.png", 325, 325, 500 ,forca, 3), --cria um "player" definido no aquivo player.lua
+        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritesheet.png", 425, 325, 500 ,forca, 3) --cria um "player" definido no aquivo player.lua
+    }
+ 
     objetos = {} --Lista de Objetos
-    objetos.chao = {} --Lista de Objetos chão
-    objetos.chao.tag = "chao"
-    objetos.chao.body = love.physics.newBody(world, 650/2+9, 650 - 50/2)
-    objetos.chao.shape = love.physics.newRectangleShape(1500, 50)
-    objetos.chao.fixture = love.physics.newFixture(objetos.chao.body, objetos.chao.shape)
-    objetos.chao.fixture:setUserData(objetos.chao.tag)
-
-    objetos.bloco = {}
-    objetos.bloco.tag = "bloco"
-    objetos.bloco.body = love.physics.newBody(world, 200 , 550 , "dynamic")
-    objetos.bloco.shape = love.physics.newRectangleShape(0, 0, 50, 100)
-    objetos.bloco.fixture = love.physics.newFixture(objetos.bloco.body, objetos.bloco.shape, 2)
-    objetos.bloco.fixture:setUserData(objetos.bloco.tag)
+    objetos.ch1 = newFloor("Floor", world, 450, 600, 1500, 50)
+    objetos.ch2 = newFloor("Floor", world, 900, 400, 50, 400)
+    objetos.bl1 = newBloco("bloco", world, 200, 550, 50, 150) -- TESTE
 
     love.graphics.setBackgroundColor(5/255, 155/255, 1)  --Azul - rgb(RED, GREEN, BLUE, ALPHA) só aceita valores entre 0 e 1 para cada campo ex: (255/255, 20/255, 60/255, 1)
-    love.window.setMode(750, 650) -- Deixa a janela com o tamanho indicado
 
     text = " "
-    vida = "Vida Player0: ".. player0.life .."\nVida Player1: " .. player1.life
+    vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life
 end
 
 function love.update( dt )
-if love.keyboard.isDown("t") then
-    world:update( dt )
-  end
+    world:update(dt)
 
-    player0:setKeyboardControls("right", "left", "up")
-    player1:setKeyboardControls("d", "a", "w")
+    players.p0:setKeyboardControls("right", "left", "up")
+    players.p1:setKeyboardControls("d", "a", "w")
 
-    player0:update(dt)
-    player1:update(dt)
+    for i, p in pairs(players) do --Percorre por todos os Players da Lista
+        p:update(dt)
+    end
 
-    if string.len(text) > 800 then    -- cleanup when 'text' gets too long
+    if string.len(text) > 800 then    -- Limpa o Texto caso esteja muito grande
         text = " "
     end
 
-    vida = "Vida Player0: ".. player0.life .."\nVida Player1: " .. player1.life --Temporário
+    vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life --Temporário
 end
 
 function love.draw()
-    love.graphics.setColor( 72/255, 160/255, 16/255) -- Verde
-    love.graphics.polygon("fill",objetos.chao.body:getWorldPoints(objetos.chao.shape:getPoints()))
+    for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista
+        p:drawMe() --desenha o objeto na tela
+    end
+    --objetos.ch1:drawMe() --desenha o "chão"
+    --objetos.bl1:drawMe() --desenha o bloco que se mexe
+    
+    love.graphics.setColor( 1, 1, 1)-- Branco
 
-    love.graphics.setColor( 119/255, 69/255, 22/255) -- Marrom
-    love.graphics.polygon("fill", objetos.bloco.body:getWorldPoints( objetos.bloco.shape:getPoints()))
-
-    love.graphics.setColor( 1, 1, 1)
-    player0:drawMySprite()
-    player1:drawMySprite()
+    for i,p in pairs(players) do --Desenha os Players da lista Player
+        p:drawMySprite()
+    end
 
     textoTemporario()
-
 end
 
 function textoTemporario()
@@ -161,57 +153,68 @@ function textoTemporario()
 
 end
 
-function isUnderneath(normalY, tag1, tag2, objeto1, objeto2) --Retorna o objeto que estava por baixo na hora da colisão (normalY é valor Y do vetor Normal da colisão)
-    if (tag1 == objeto1.tag and tag2 == objeto2.tag) then
-        if(normalY < 0) then
-            return objeto1
-        elseif(normalY > 0) then
-            return objeto2
-        end
-    elseif (tag1 == objeto2.tag and tag2 == objeto1.tag) then
-        if(normalY < 0) then
-            return  objeto2
-        elseif(normalY > 0) then
-             return objeto1
-        end
+function isUnderneath(normalY, object1, object2) --Retorna o objeto que ficou por baixo durante a colisão (normalY é valor Y do vetor Normal da colisão)
+    if (normalY >= 0.5) then
+        return object2 
+    elseif (normalY <= -0.5) then
+        return object1
     end
-    return nil
+    return nil -- Caso nenhum dos objetos tenha ficado por baixo, retornará "nil"
 end
 
-function beginContact(a, b, coll) --Inicio do contato
-    local x, y = coll:getNormal()
-    local tagA = a:getUserData()
-    local tagB = b:getUserData()
-    local under = isUnderneath(y, tagA, tagB, player0, player1) --under recebe o objeto que ficou por baixo na colisão (entre Player0 e Player1)
+function beginContact(fxtrA, fxtrB, coll) --Inicio do contato (fxtr representa Fixture, coll representa Collision)
+    local normX, normY = coll:getNormal()
+    local objA = fxtrA:getUserData()
+    local objB = fxtrB:getUserData()
+    local tagA = objA.tag
+    local tagB = objB.tag
+ 
+    local under = isUnderneath(normY, objA, objB) --Retorna o objeto que ficou por baixo na Colisão
 
     --Dano por Pisão na cabeça
     if under ~= nil then
-        under:applyDamage(1)
+        for i, p in pairs(players) do --Percorre por todos os Players da Lista
+            if under.tag == p.tag then --Verifica se é o player que ficou por baixo, na colisão
+                under:applyDamage(1) -- Aplica o dano de -1 na vida do player
+            end
+        end
     end
+    ----
 
-    --condição de pulo Player0
-    player0:setIsGrounded(tagA, tagB, "chao", true)
-    player0:setIsGrounded(tagA, tagB, "bloco", true)
-
-    --condição de pulo Player1
-    player1:setIsGrounded(tagA, tagB, "chao", true)
-    player1:setIsGrounded(tagA, tagB, "bloco", true)
-
-    text = text.."\n"..tagA.." colidindo com "..tagB.." / Vetor normal: (" ..x.." , "..y.." )" --Temporário
+    text = text.."\n"..tagA.." colidindo com "..tagB.." / Vetor normal: (" ..normX.." , "..normY.." )" --Temporário
 end
 
-function endContact(a, b, coll) -- após o contato terminar
-    local x, y = coll:getNormal()
-    local tagA = a:getUserData()
-    local tagB = b:getUserData()
+function preSolve (fxtrA, fxtrB, coll) --Durante a Colisão
+    local normX, normY = coll:getNormal()
+    local objA = fxtrA:getUserData()
+    local objB = fxtrB:getUserData()
+    local tagA = objA.tag
+    local tagB = objB.tag
 
-    --Colisão com Player0
-    player0:setIsGrounded(tagA, tagB, "chao", false)
-    player0:setIsGrounded(tagA, tagB, "bloco", false)
+    if (objA:type() == "Player") and (objB:type() == "Player") then
 
-    --Colisão com Player1
-    player1:setIsGrounded(tagA, tagB, "chao", false)
-    player1:setIsGrounded(tagA, tagB, "bloco", false)
+    elseif (objA:type() == "Player") or (objB:type() == "Player") then
+        for i, p in pairs(players) do --Percorre por todos os Players da lista players
+            if (tagA == p.tag) or (tagB == p.tag) then --Verifica se a tag do player é igual a tag do objeto da colisão
+                p:setIsGrounded(true)
+            end
+        end
+    end
+end
 
+function endContact(fxtrA, fxtrB, coll) -- Após o contato terminar
+    local normX, normY = coll:getNormal() --Pega o vetor normal da colisão
+    local objA = fxtrA:getUserData() --Pega o Objeto que possui a fixture envolvida na colisão
+    local objB = fxtrB:getUserData()
+    local tagA = objA.tag --Pega a tag do Objeto
+    local tagB = objB.tag
+
+    if (objA:type() == "Player") or (objB:type() == "Player") then --Verifica se a colisão ocorreu com algum objeto do tipo Player
+        for i, p in pairs(players) do --Percorre por todos os Players da lista players
+            if (tagA == p.tag) or (tagB == p.tag) then --Verifica se a tag do player é igual a tag do objeto da colisão
+                p:setIsGrounded(false)
+            end
+        end
+    end
     text = text.."\n"..tagA.." parou de colidir com "..tagB --Temporário
 end
