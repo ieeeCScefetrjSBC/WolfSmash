@@ -1,25 +1,44 @@
 require("player")
 require("floor")
 require("bloco")
+require("button")
+windowWidth, windowHeight = love.window.getMode()
+menuActive = true
 
 function love.load()
-    love.mouse.setVisible(false) --Deixa o cursos do mouse invisível 
+    selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
+    joysticks = nil
+    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
+
+    print(joysticks)
+
+    if(not menuActive) then
+        initialSetting()
+    else
+        menu()
+    end
+end
+
+function menu()
+    menu = love.physics.newWorld(0, 0, true)
+    buttons = { newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2, windowHeight/2),
+                newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2, 70 + windowHeight/2)}
+end
+
+function initialSetting()
+    love.mouse.setVisible(false) --Deixa o cursos do mouse invisível
     love.physics.setMeter( 64 ) -- 1 metro = 64 pixels
     world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
     world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
-
-    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
     forca = 500
     players= {
         p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritesheet.png", 325, 325, 500 ,forca, 3), --cria um "player" definido no aquivo player.lua
         p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritesheet.png", 425, 325, 500 ,forca, 3) --cria um "player" definido no aquivo player.lua
     }
- 
     objetos = {} --Lista de Objetos
     objetos.ch1 = newFloor("Floor", world, 450, 600, 1500, 50)
     objetos.ch2 = newFloor("Floor", world, 900, 400, 50, 400)
     objetos.bl1 = newBloco("bloco", world, 200, 550, 50, 150) -- TESTE
-
     love.graphics.setBackgroundColor(5/255, 155/255, 1)  --Azul - rgb(RED, GREEN, BLUE, ALPHA) só aceita valores entre 0 e 1 para cada campo ex: (255/255, 20/255, 60/255, 1)
 
     text = " "
@@ -27,36 +46,104 @@ function love.load()
 end
 
 function love.update( dt )
-    world:update(dt)
+    if(not menuActive) then
+        world:update(dt)
 
-    players.p0:setKeyboardControls("right", "left", "up")
-    players.p1:setKeyboardControls("d", "a", "w")
 
-    for i, p in pairs(players) do --Percorre por todos os Players da Lista
-        p:update(dt)
+        players.p0:setKeyboardControls("right", "left", "up")
+        players.p1:setKeyboardControls("d", "a", "w")
+
+        for i, p in pairs(players) do --Percorre por todos os Players da Lista
+            p:update(dt)
+        end
+
+        if string.len(text) > 800 then    -- Limpa o Texto caso esteja muito grande
+            text = " "
+        end
+
+        vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life --Temporário
+    else
+        -----Caso o Menu esteja Ativo------
+        -----Joystick
+        if (joysticks[1] ~= nil) then --Se tiver joystick conectado
+            local direcao = joysticks[1]:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+            local botao = joysticks[1]:isDown(3) -- Recebe o valor do botão A do fliperama
+
+            if(direcao ~= 0) then
+                selcBtn = selcBtn - direcao --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                love.timer.sleep(0.1666)
+            end
+
+            if selcBtn > 2 then
+                  selcBtn = 1
+            elseif selcBtn < 1 then
+                  selcBtn = 2
+            end
+
+            if(botao) then
+                if selcBtn == 1 then
+                    menuActive = false
+                    love.load()
+                elseif selcBtn == 2 then
+                    love.event.quit()
+                end
+            end
+        end
+        -------
+
+        ----- Teclado
+        if love.keyboard.isDown("up") then
+            selcBtn = selcBtn - 1
+            love.timer.sleep(0.1666)
+        elseif love.keyboard.isDown("down") then
+            selcBtn = selcBtn + 1
+            love.timer.sleep(0.1666)
+        end
+        ------
+
+        if selcBtn > 2 then
+            selcBtn = 1
+        elseif selcBtn < 1 then
+            selcBtn = 2
+        end
+
+        if love.keyboard.isDown("return") then
+            if selcBtn == 1 then
+                menuActive = false
+                love.load()
+            elseif selcBtn == 2 then
+                love.event.quit()
+            end
+        end
+
+        for i, p in ipairs(buttons) do --Percorre por todos os Botoes da Lista
+            if i == selcBtn then
+                p:update(true)
+            else
+                p:update(false)
+            end
+        end
     end
-
-    if string.len(text) > 800 then    -- Limpa o Texto caso esteja muito grande
-        text = " "
-    end
-
-    vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life --Temporário
 end
 
 function love.draw()
-    for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista
-        p:drawMe() --desenha o objeto na tela
-    end
-    --objetos.ch1:drawMe() --desenha o "chão"
-    --objetos.bl1:drawMe() --desenha o bloco que se mexe
-    
-    love.graphics.setColor( 1, 1, 1)-- Branco
+    if(not menuActive) then
+        for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista
+            p:drawMe() --desenha o objeto na tela
+        end
 
-    for i,p in pairs(players) do --Desenha os Players da lista Player
-        p:drawMySprite()
-    end
+        love.graphics.setColor( 1, 1, 1)-- Branco
 
-    textoTemporario()
+        for i,p in pairs(players) do --Desenha os Players da lista Player
+            p:drawMySprite()
+        end
+
+        textoTemporario()
+    else
+        for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
+            p:drawMe()
+        end
+    end
 end
 
 function textoTemporario()
@@ -155,7 +242,7 @@ end
 
 function isUnderneath(normalY, object1, object2) --Retorna o objeto que ficou por baixo durante a colisão (normalY é valor Y do vetor Normal da colisão)
     if (normalY >= 0.5) then
-        return object2 
+        return object2
     elseif (normalY <= -0.5) then
         return object1
     end
@@ -168,7 +255,7 @@ function beginContact(fxtrA, fxtrB, coll) --Inicio do contato (fxtr representa F
     local objB = fxtrB:getUserData()
     local tagA = objA.tag
     local tagB = objB.tag
- 
+
     local under = isUnderneath(normY, objA, objB) --Retorna o objeto que ficou por baixo na Colisão
 
     --Dano por Pisão na cabeça
