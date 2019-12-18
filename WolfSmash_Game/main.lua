@@ -1,15 +1,15 @@
 require("player")
 require("floor")
-require("Wall")
+require("platform")
+require("wall")
 require("bloco")
 require("button")
 windowWidth, windowHeight = love.window.getMode()
-menuActive = false
+menuActive = true
 
 function love.load()
     love.mouse.setVisible(false) --Esconde o cursor da tela
     selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
-    joysticks = nil
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
 
     if(not menuActive) then
@@ -20,7 +20,6 @@ function love.load()
 end
 
 function menu()
-    menu = love.physics.newWorld(0, 0, true)
     buttons = { newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2, windowHeight/2),
                 newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2, 70 + windowHeight/2)}
 end
@@ -32,14 +31,17 @@ function initialSetting()
     world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
     forca = 300
     players= {
-        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritesheet.png", 325, 325, 700 ,forca, 1, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
-        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritesheet.png", 425, 325, 700 ,forca, 1, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", 1, 325, 325, 700 ,forca, 1, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
+        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", 2, 425, 325, 700 ,forca, 1, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     }
     objetos = {} --Lista de Objetos
-    objetos.ch1 = newFloor("Floor", world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
-    objetos.wl2 = newWall("Wall", world, windowWidth-25, windowHeight/2-25, 50, windowHeight)
-    objetos.wl3 = newWall("Wall", world, windowWidth/10, windowHeight-250, 50, 400)
-    --objetos.bl1 = newBloco("bloco", world, 200, 550, 50, 150) -- TESTE
+    objetos.ch1 = newFloor("Floor", world, windowWidth/2, 25, windowWidth, 50, nil)
+    objetos.ch2 = newFloor("Floor", world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
+    objetos.plt1 = newPlatform("Platform", world, windowWidth/2, windowHeight/2 - windowHeight*0.15, 150, 20, nil)
+    objetos.plt2 = newPlatform("Platform", world, windowWidth/2 + 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
+    objetos.plt3 = newPlatform("Platform", world, windowWidth/2 - 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
+    objetos.wl1 = newWall("Wall", world, windowWidth-25, windowHeight/2-25, 50, windowHeight)
+    objetos.wl2 = newWall("Wall", world, 25, windowHeight/2-50, 50, windowHeight)
     love.graphics.setBackgroundColor(5/255, 155/255, 1)  --Azul - rgb(RED, GREEN, BLUE, ALPHA) só aceita valores entre 0 e 1 para cada campo ex: (255/255, 20/255, 60/255, 1)
 
     text = " "
@@ -253,9 +255,6 @@ function beginContact(fxtrA, fxtrB, coll) --Inicio do contato (fxtr representa F
     local tagB = objB.tag
     local typeObj2 = objB:type()
 
-    if(typeObj2 == "Floor") then
-
-    end
 
     text = text.."\n"..tagA.." colidindo com "..tagB.." / Vetor normal: (" ..normX.." , "..normY.." )" --Temporário
 end
@@ -280,14 +279,44 @@ function preSolve (fxtrA, fxtrB, coll) --Durante a Colisão
         end
         ----
     elseif ((objA:type() == "Player") or (objB:type() == "Player"))then -- Se tiver Player envolvido na colisão
+        ----------------------Chão------------------------
         if((objA:type() == "Floor") or (objB:type() == "Floor"))then --Se tiver Player e Floor envolvido na colisão
-            for i, p in pairs(players) do --Percorre por todos os Players da lista players
-                if (tagA == p.tag) or (tagB == p.tag) then --Verifica qual dos Players estava na colisão através da Tag
-                    p:setTouchingTheFloor(true)
+            if (normX == 0) and (normY == 1) then --Vê se o player está acima
+                for i, p in pairs(players) do --Percorre por todos os Players da lista players
+                    if (tagA == p.tag) or (tagB == p.tag) then --Verifica qual dos Players estava na colisão através da Tag
+                        p:setTouchingTheFloor(true)
+                    end
                 end
             end
         end
-        if((objA:type() == "Wall") or (objB:type() == "Wall"))then --Se tiver Player e Floor envolvido na colisão
+
+        -----------------Plataforma-------------------
+        if((objA:type() == "Platform") or (objB:type() == "Platform")) then --Se tiver Player e Platform envolvido na colisão
+
+            if (normX == 0) and (normY == 1) then -- Vê se o player está acima
+                coll:setEnabled(true) -- Habilita o contato entre o player e a plataforma
+                for i, p in pairs(players) do --Percorre por todos os Players da lista players
+                    if (tagA == p.tag) or (tagB == p.tag) then --Verifica qual dos Players estava na colisão através da Tag
+                        if (not p:getCrossedThePlatform()) then
+                            p:setTouchingTheFloor(true)
+                        else
+                            local linVelX = p.body:getLinearVelocity()
+                            p.body:setLinearVelocity(linVelX, 0) --Zera a velocidade linear Y do Player antes que seja somado ao próximo pulo
+                            p:setCrossedThePlatform(false)
+                        end
+                    end
+                end
+            else -- se o player não estiver por cima da plataforma
+                coll:setEnabled(false) -- desabilita o contato entre o player e a plataforma
+                if (objA:type() == "Player") then
+                    objA:setCrossedThePlatform(true) -- Ativa a Flag de verificação se passou por dentro da plataforma
+                else
+                    objB:setCrossedThePlatform(true)
+                end
+            end
+        end
+        -------------------Parede---------------------
+        if((objA:type() == "Wall") or (objB:type() == "Wall"))then --Se tiver Player e Wall envolvido na colisão
             for i, p in pairs(players) do --Percorre por todos os Players da lista players
                 if (tagA == p.tag) or (tagB == p.tag) then --Verifica qual dos Players estava na colisão através da Tag
                     p:setWallJumpVector(normX,normY, objA, objB)
@@ -305,7 +334,8 @@ function endContact(fxtrA, fxtrB, coll) -- Após o contato terminar
     local tagA = objA.tag --Pega a tag do Objeto
     local tagB = objB.tag
 
-    if ((objA:type() == "Player") or (objB:type() == "Player")) then --Verifica se a colisão ocorreu com algum objeto do tipo Player
+    if ((objA:type() == "Player") or (objB:type() == "Player")) then --Verifica se a colisão ocorreu com algum objeto do tipo
+        ----------------------Chão------------------------
         if((objA:type() == "Floor") or (objB:type() == "Floor"))then --Se tiver Player e Floor envolvido na colisão
             for i, p in pairs(players) do --Percorre por todos os Players da lista players
                 if (tagA == p.tag) or (tagB == p.tag) then --Verifica se a tag do player é igual a tag do objeto da colisão
@@ -313,7 +343,16 @@ function endContact(fxtrA, fxtrB, coll) -- Após o contato terminar
                 end
             end
         end
-        if((objA:type() == "Wall") or (objB:type() == "Wall"))then --Se tiver Player e Floor envolvido na colisão
+        -----------------Plataforma-------------------
+        if((objA:type() == "Platform") or (objB:type() == "Platform"))then --Se tiver Player e Platform envolvido na colisão
+            for i, p in pairs(players) do --Percorre por todos os Players da lista players
+                if (tagA == p.tag) or (tagB == p.tag) then --Verifica se a tag do player é igual a tag do objeto da colisão
+                    p:setTouchingTheFloor(false)
+                end
+            end
+        end
+        -------------------Parede---------------------
+        if((objA:type() == "Wall") or (objB:type() == "Wall"))then --Se tiver Player e Wall envolvido na colisão
             for i, p in pairs(players) do --Percorre por todos os Players da lista players
                 if (tagA == p.tag) or (tagB == p.tag) then --Verifica se a tag do player é igual a tag do objeto da colisão
                     p:setTouchingTheWall(false)
