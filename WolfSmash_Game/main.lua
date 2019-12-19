@@ -11,6 +11,9 @@ windowWidth, windowHeight = love.window.getMode()
 menu = Gamestate.new()
 pause = Gamestate.new()
 game = Gamestate.new()
+selection = Gamestate.new()
+
+
 
 function love.load()
     love.mouse.setVisible(false) --Esconde o cursor da tela
@@ -33,18 +36,200 @@ end
 function love.joystickpressed(joystick, button)
      Gamestate.joystickpressed(joystick, button)
 end
+
+----------------------------ESTADO MENU-------------------------------------------------
+function menu:enter()
+    self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
+    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
+    buttons = { newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2, windowHeight/2),
+                newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2, 70 + windowHeight/2)}
+end
+
+function menu:update(dt) -- runs every frame
+    -----Joystick
+    if (joysticks ~= nil) then --Se tiver joystick conectado
+        for i, j in pairs(joysticks) do --Percorre por todos os objetos da Lista
+            local direcao = j:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+
+            if(direcao ~= 0) then
+                if direcao > 0 then
+                    self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                    love.timer.sleep(0.1666)
+                elseif direcao < 0 then
+                    self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                    love.timer.sleep(0.1666)
+                end
+            end
+        end
+    end
+    -------
+
+    if self.selcBtn > 2 then
+        self.selcBtn = 1
+    elseif self.selcBtn < 1 then
+        self.selcBtn = 2
+    end
+
+    for i, p in ipairs(buttons) do --Percorre por todos os Botoes da Lista
+        if i == self.selcBtn then
+            p:update(true)
+        else
+            p:update(false)
+        end
+    end
+end
+
+function menu:keypressed(key)
+    if key == "up" then
+        self.selcBtn = self.selcBtn - 1
+    elseif key == "down" then
+        self.selcBtn = self.selcBtn + 1
+    end
+    if key == "return" then
+        if self.selcBtn == 1 then
+            Gamestate.switch(selection)
+        elseif self.selcBtn == 2 then
+            love.event.quit()
+        end
+    end
+end
+
+function menu:joystickpressed(joystick, button)
+    if button == 3 then -- A
+        if self.selcBtn == 1 then
+            Gamestate.switch(selection)
+        elseif self.selcBtn == 2 then
+            love.event.quit()
+        end
+    end
+end
+
+function menu:draw()
+    for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
+        p:drawMe()
+    end
+end
+
+----------------------------ESTADO SELEÇÂO-------------------------------------------------
+function selection:enter()
+    self.players = {nil, nil} --Selva os personagens selecionados pelos jogadores
+    self.lock = {false,false}
+    self.selcBtn ={1,1} --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
+    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
+    options1 = { newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2 + 70, windowHeight/2), --botoes com os personagens para os dois Players
+                newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2 + 70, 70 + windowHeight/2)}
+    options2 = { newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 -70, windowHeight/2),
+                 newButton("imagens/Menu Inicia1.png","imagens/Menu Inicia2.png", windowWidth/2 -70, 70 + windowHeight/2)}
+    options = {options1, options2}
+end
+
+
+function selection:update(dt) -- runs every frame
+    if self.players[1] ~= nil and self.players[2] ~= nil then
+        Gamestate.switch(game)
+    end
+
+    --------------Joystick-------------------
+    if (joysticks ~= nil) then --Se tiver joystick conectado
+        for i, j in pairs(joysticks) do --Percorre por todos os objetos da Lista
+            local direcao = j:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+            if(direcao ~= 0) then
+                if direcao > 0 then
+                    self.selcBtn[i] = self.selcBtn[i] + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                    love.timer.sleep(0.1666)
+                elseif direcao < 0 then
+                    self.selcBtn[i] = self.selcBtn[i] - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                    love.timer.sleep(0.1666)
+                end
+            end
+        end
+    end
+    --------------------------------------------
+
+    -- Limita o os botões entre 1 e 2
+    for i = 1, #self.selcBtn do
+        if self.selcBtn[i] > 2 then
+            self.selcBtn[i] = 1
+        elseif self.selcBtn[i] < 1 then
+            self.selcBtn[i] = 2
+        end
+    end
+
+    for i, o in pairs(options) do --Percorre por todas as Opções da Lista
+        for j, b in pairs(o) do --Percorre por todos os Botoes das Opções
+            if j == self.selcBtn[i] then -- Se o botão de indice j for igual ao botão selecionado da opção
+                b:update(true)
+            else
+                b:update(false)
+            end
+        end
+    end
+end
+
+function selection:keypressed(key)
+    for i, lock in ipairs(self.lock) do --Percorre pela lista lock do Selection
+        if not lock then
+            if i == 1 then
+                if key == "up" then
+                    self.selcBtn[i] = self.selcBtn[i] - 1
+                elseif key == "down" then
+                    self.selcBtn[i] = self.selcBtn[i] + 1
+                end
+            elseif i == 2 then
+                if key == "w" then
+                    self.selcBtn[i] = self.selcBtn[i] - 1
+                elseif key == "s" then
+                    self.selcBtn[i] = self.selcBtn[i] + 1
+                end
+            end
+        end
+        for i, b in ipairs(self.selcBtn) do --Percorre pela lista selcBtn do Selection
+            if i == 1 then
+                if key == "return" then
+                    self.players[i] = b
+                    self.lock[i] = true
+                end
+            elseif i == 2 then
+                if key == "f" then
+                    self.players[i] = b
+                    self.lock[i] = true
+                end
+            end
+        end
+    end
+end
+
+function selection:joystickpressed(joystick, button)
+    for i, joy in ipairs(joysticks) do --Percorre pela lista de joysticks conectado
+        if joy == joystick then --Verifica qual joystick que apertou o botão
+            if button == 3 then
+                self.players[i] = self.selcBtn[i]
+                self.lock[i] = true
+            end
+        end
+    end
+end
+
+function selection:draw()
+    for i, o in ipairs(options) do --Percorre por todas as Opções da Lista
+        for j, b in ipairs(o) do --Percorre por todos os Botoes das Opções
+            b:drawMe()
+        end
+    end
+end
+
 function game:init()
     self.background = love.graphics.newImage("imagens/Arena Background.png")
 end
 
-function game:enter()
+function game:enter(from)
     love.physics.setMeter(64) -- 1 metro = 64 pixels
     world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
     world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
     local forca = 300
     players= {
-        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", 1, 325, 325, 700 ,forca, 1, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
-        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", 2, 425, 325, 700 ,forca, 1, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", from.players[1], 325, 325, 700 ,forca, 1, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
+        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", from.players[2], 425, 325, 700 ,forca, 1, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     }
     objetos = {} --Lista de Objetos
     objetos.ch1 = newFloor("Floor", world, windowWidth/2, 25, windowWidth, 50, nil)
@@ -322,79 +507,7 @@ function endContact(fxtrA, fxtrB, coll) -- Após o contato terminar
     text = text.."\n"..tagA.." parou de colidir com "..tagB --Temporário
 end
 
-function menu:enter()
-    self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
-    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
-    buttons = { newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2, windowHeight/2),
-                newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2, 70 + windowHeight/2)}
-end
-
-function menu:update(dt) -- runs every frame
-    -----Joystick
-    if (joysticks ~= nil) then --Se tiver joystick conectado
-        for i, j in pairs(joysticks) do --Percorre por todos os objetos da Lista
-            local direcao = j:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
-
-            if(direcao ~= 0) then
-                if direcao > 0 then
-                    self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
-                    love.timer.sleep(0.1666)
-                elseif direcao < 0 then
-                    self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
-                    love.timer.sleep(0.1666)
-                end
-            end
-        end
-    end
-    -------
-
-    if self.selcBtn > 2 then
-        self.selcBtn = 1
-    elseif self.selcBtn < 1 then
-        self.selcBtn = 2
-    end
-
-    for i, p in ipairs(buttons) do --Percorre por todos os Botoes da Lista
-        if i == self.selcBtn then
-            p:update(true)
-        else
-            p:update(false)
-        end
-    end
-end
-
-function menu:keypressed(key)
-    print (self.selcBtn)
-    if key == "up" then
-        self.selcBtn = self.selcBtn - 1
-    elseif key == "down" then
-        self.selcBtn = self.selcBtn + 1
-    end
-    if key == "return" then
-        if self.selcBtn == 1 then
-            Gamestate.switch(game)
-        elseif self.selcBtn == 2 then
-            love.event.quit()
-        end
-    end
-end
-
-function menu:joystickpressed(joystick, button)
-    if button == 3 then -- A
-        if self.selcBtn == 1 then
-            Gamestate.switch(game)
-        elseif self.selcBtn == 2 then
-            love.event.quit()
-        end
-    end
-end
-
-function menu:draw()
-    for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
-        p:drawMe()
-    end
-end
-
+----------------------------ESTADO PAUSE-------------------------------------------------
 function pause:enter(from)
     self.from = from -- salva o estado anterior
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
