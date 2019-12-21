@@ -16,6 +16,7 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
         right = keyRight
     }
     p.image = love.graphics.newImage(pathImage)
+    p.playerNumber = playerNumber
     local g = anim8.newGrid(64, 64, p.image:getWidth(), p.image:getHeight())
     p.animation = {
         idle  = anim8.newAnimation(g('1-4',playerNumber), 0.1),
@@ -36,6 +37,7 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
         jump = false,
         right = true,
     }
+    p.maxSpeed = 500
     p.velX = velX --Velocidade de locomoção pelo eixo X
     p.jumpForce = jumpForce * -1 --Força do Pulo (está negativo por conta do eixo Y crescer para baixo)
     p.life = life --Vida do Player
@@ -48,28 +50,36 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
 
     p.body = love.physics.newBody(p.world, posX , posY, "dynamic") --Cria o corpo dinamico na posição e mundo indicado
     p.body:setFixedRotation(true) --Faz o corpo não ficar girando
-    p.shape = love.physics.newRectangleShape(0, 0, 64,64)
-    p.fixture = love.physics.newFixture(p.body, p.shape, 1)
+    p.shape = love.physics.newRectangleShape(0, 0, 32,64)
+    p.fixture = love.physics.newFixture(p.body, p.shape, 2)
     p.fixture:setUserData(p) -- Salva a lista com os atributos do Player.
     p.contacts = p.body:getContacts() -- pega a lista dos contatos do corpo
-
     p.animation.current = p.animation.idle
+
+    if playerNumber == 1 then --Stark
+        p.velX = 760
+        p.maxSpeed = 600
+    elseif playerNumber == 2 then -- Ultra-T
+
+    elseif playerNumber == 3 then --Personagem de água
+        p.jumpForce = -380
+    end
 
     return setmetatable(p, Player) --Retorna uma instância da Classe Player
 end
-function Player:setMaxSpeedX(maxSpeed) --Delimita a velocidade do player (eixoX) ao valor especificado
+function Player:setMaxSpeedX() --Delimita a velocidade do player (eixoX) ao valor especificado
     local linVelX, linVelY = self.body:getLinearVelocity()
-    if linVelX > maxSpeed then
-        self.body:setLinearVelocity(maxSpeed, linVelY)
-    elseif linVelX < -maxSpeed then
-        self.body:setLinearVelocity(-maxSpeed, linVelY)
+    if linVelX > self.maxSpeed then
+        self.body:setLinearVelocity(self.maxSpeed, linVelY)
+    elseif linVelX < -self.maxSpeed then
+        self.body:setLinearVelocity(-self.maxSpeed, linVelY)
     end
 end
 
 function Player:update(dt)
     self.animation.current:update(dt)--Realiza a animação do Player
     Timer.update(dt)
-    self:setMaxSpeedX(500) --Define a velocidade máxima do player
+    self:setMaxSpeedX() --Define a velocidade máxima do player
     self.contacts = self.body:getContacts() -- Pega a lista dos contatos do Player
     local linVelX, linVelY = self.body:getLinearVelocity()
 
@@ -168,8 +178,8 @@ function Player:update(dt)
             self.status.walk = false
         end
 
-        local botaoA = self.joystick:isDown(2)
-        if botaoA then
+        local botaoB = self.joystick:isDown(2)
+        if botaoB then
             if self.touchingTheFloor then
                 self.body:applyLinearImpulse(0, self.jumpForce)
                 self.status.jump = true
@@ -177,6 +187,14 @@ function Player:update(dt)
                 self.body:setLinearVelocity(linVelX,-125) --A velocidade linear do player é setada pra -125 para que o impulso não fique muito forte.
                 self.body:applyLinearImpulse(150 * (self.wallJumpVector.x), self.jumpForce) --aplica o impulso no eixo X de 150 pro lado inverso do contato
                 self.status.jump = true
+            end
+        end
+        if self.playerNumber == 2 then
+            local botaoA = self.joystick:isDown(3)
+            if botaoA then
+                self.body:setGravityScale(4)
+            else
+                self.body:setGravityScale(1)
             end
         end
     else
@@ -201,6 +219,14 @@ function Player:update(dt)
                 self.status.jump = true
             end
         end
+
+        if self.playerNumber == 2 then
+            if love.keyboard.isDown("s") then
+                self.body:setGravityScale(4)
+            else
+                self.body:setGravityScale(1)
+            end
+        end
         -------------------------------------------------
     end
 end
@@ -211,10 +237,11 @@ function Player:drawMySprite()
     end
 end
 
-function Player:drawMe(r, g, b)
+function Player:drawMe()
     if  self.isAlive then --Se o Player estiver vivo ele será desenhando na tela
-        love.graphics.setColor( r, g, b) -- Vermelho
+        love.graphics.setColor( 0 , 0 , 0, 0.3)
         love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints() ))
+        love.graphics.setColor(1,1,1,1)
     end
 end
 

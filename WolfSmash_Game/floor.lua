@@ -19,8 +19,9 @@ function newFloor(tag, world, posX, posY, width, height, friction)
 end
 
 function Floor:drawMe()
-    love.graphics.setColor( 72/255, 160/255, 16/255) -- Verde
-    love.graphics.polygon("fill",self.body:getWorldPoints(self.shape:getPoints()))
+    love.graphics.setColor( 0 , 0 , 0, 0.3)
+    love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints() ))
+    love.graphics.setColor(1,1,1,1)
 end
 
 function Floor:type()

@@ -16,8 +16,9 @@ function newWall(tag, world, posX, posY, width, height)
 end
 
 function Wall:drawMe()
-    love.graphics.setColor(165/255, 42/255, 42/255)
-    love.graphics.polygon("fill",self.body:getWorldPoints(self.shape:getPoints()))
+    love.graphics.setColor( 0 , 0 , 0, 0.3)
+    love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints() ))
+    love.graphics.setColor(1,1,1,1)
 end
 
 function Wall:type()

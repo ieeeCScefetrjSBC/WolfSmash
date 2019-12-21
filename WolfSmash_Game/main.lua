@@ -121,9 +121,9 @@ function selection:enter()
                     newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 + 70, 140 + windowHeight/2)
                 }
 
-    options2 = {    newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 - 70, windowHeight/2),
-                    newButton("imagens/Menu Inicia1.png","imagens/Menu Inicia2.png", windowWidth/2 - 70, 70 + windowHeight/2),
-                    newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2 - 70, 140 + windowHeight/2)
+    options2 = {    newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2 - 70, windowHeight/2),
+                    newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2 - 70, 70 + windowHeight/2),
+                    newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 - 70, 140 + windowHeight/2)
                 }
 
     options = {options1, options2}
@@ -224,6 +224,7 @@ function selection:draw()
     end
 end
 
+----------------------------ESTADO GAME-------------------------------------------------
 function game:init()
     self.background = love.graphics.newImage("imagens/Arena Background.png")
 end
@@ -232,10 +233,9 @@ function game:enter(from)
     love.physics.setMeter(64) -- 1 metro = 64 pixels
     world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
     world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
-    local forca = 300
     players= {
-        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", from.players[1], 325, 325, 700 ,forca, 1, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
-        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", from.players[2], 425, 325, 700 ,forca, 1, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", from.players[1], 325, 325, 700 , 300, 1, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
+        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", from.players[2], 425, 325, 700 , 300, 1, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     }
     objetos = {} --Lista de Objetos
     objetos.ch1 = newFloor("Floor", world, windowWidth/2, 25, windowWidth, 50, nil)
@@ -245,8 +245,7 @@ function game:enter(from)
     objetos.plt3 = newPlatform("Platform", world, windowWidth/2 - 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
     objetos.wl1 = newWall("Wall", world, windowWidth-25, windowHeight/2-25, 50, windowHeight)
     objetos.wl2 = newWall("Wall", world, 25, windowHeight/2-50, 50, windowHeight)
-    -- self.background = love.graphics.setBackgroundColor(5/255, 155/255, 1)  --Azul - rgb(RED, GREEN, BLUE, ALPHA) só aceita valores entre 0 e 1 para cada campo ex: (255/255, 20/255, 60/255, 1)
-
+    self.lostRound = {play0 = 0, play1 = 0}
     text = " "
     vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life
 end
@@ -286,6 +285,7 @@ function game:draw()
     love.graphics.draw(self.background, 0, 0)
     for i,p in pairs(players) do --Desenha os Players da lista Player
        p:drawMySprite()
+       p:drawMe()
     end
 
     for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista
