@@ -17,6 +17,9 @@ selection = Gamestate.new()
 
 function love.load()
     love.mouse.setVisible(false) --Esconde o cursor da tela
+    love.physics.setMeter(64) -- 1 metro = 64 pixels
+    world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
+    world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
     Gamestate.switch(menu)
 end
 
@@ -80,9 +83,9 @@ function menu:update(dt) -- runs every frame
 end
 
 function menu:keypressed(key)
-    if key == "up" then
+    if key == "up" or key == "w" then
         self.selcBtn = self.selcBtn - 1
-    elseif key == "down" then
+    elseif key == "down" or key == "s" then
         self.selcBtn = self.selcBtn + 1
     end
     if key == "return" then
@@ -105,6 +108,7 @@ function menu:joystickpressed(joystick, button)
 end
 
 function menu:draw()
+    love.graphics.setColor( 1, 1, 1)-- Branco
     for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
         p:drawMe()
     end
@@ -229,13 +233,17 @@ function game:init()
     self.background = love.graphics.newImage("imagens/Arena Background.png")
 end
 
-function game:enter(from)
-    love.physics.setMeter(64) -- 1 metro = 64 pixels
-    world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
-    world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
+function game:enter(previous)
+    if self.previous == nil then
+         self.previous = previous
+        self.lostRound = {play0 = 0, play1 = 0}
+    else
+        self.previous = previous.previous
+        self.lostRound = previous.lostRound
+    end
     players= {
-        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", from.players[1], 325, 325, 700 , 300, 1, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
-        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", from.players[2], 425, 325, 700 , 300, 1, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 300, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
+        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], 425, 325, 700 , 300, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     }
     objetos = {} --Lista de Objetos
     objetos.ch1 = newFloor("Floor", world, windowWidth/2, 25, windowWidth, 50, nil)
@@ -245,15 +253,24 @@ function game:enter(from)
     objetos.plt3 = newPlatform("Platform", world, windowWidth/2 - 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
     objetos.wl1 = newWall("Wall", world, windowWidth-25, windowHeight/2-25, 50, windowHeight)
     objetos.wl2 = newWall("Wall", world, 25, windowHeight/2-50, 50, windowHeight)
-    self.lostRound = {play0 = 0, play1 = 0}
     text = " "
     vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life
+    round = "Player0 vitórias: ".. self.lostRound.play1 .."\nPlayer1 vitórias: " .. self.lostRound.play0
 end
 
 function game:update(dt)
     world:update(dt)
     for i, p in pairs(players) do --Percorre por todos os Players da Lista
         p:update(dt)
+        if (not p.isAlive) then
+            if p.tag == "player0" then
+                self.lostRound.play0 = self.lostRound.play0 + 1
+                p:resetPlayer(500, 350)
+            else
+                self.lostRound.play1 = self.lostRound.play1 + 1
+                p:resetPlayer(500, 350)
+            end
+        end
     end
 
     if string.len(text) > 800 then    -- Limpa o Texto caso esteja muito grande
@@ -261,6 +278,7 @@ function game:update(dt)
     end
 
     vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life --Temporário
+    round = "Player0 vitórias: ".. self.lostRound.play1 .."\nPlayer1 vitórias: " .. self.lostRound.play0
 end
 
 function game:keypressed(key)
@@ -300,6 +318,7 @@ function game:textoTemporario()
 
     love.graphics.setColor( 0, 0, 0)  --PRETO
     love.graphics.print(vida, 500, 10)
+    love.graphics.print(round, 500, 35)
 
     love.graphics.print("FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 
@@ -513,8 +532,8 @@ function endContact(fxtrA, fxtrB, coll) -- Após o contato terminar
 end
 
 ----------------------------ESTADO PAUSE-------------------------------------------------
-function pause:enter(from)
-    self.from = from -- salva o estado anterior
+function pause:enter(previous)
+    self.previous = previous -- salva o estado anterior
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
     buttons = { newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2, windowHeight/2),
@@ -570,7 +589,7 @@ function pause:keypressed(key)
 end
 
 function pause:joystickpressed(joystick, button)
-    if joystick == self.from:getJoystickPauser() then
+    if joystick == self.previous:getJoystickPauser() then
         if button == 3 then -- A
             if self.selcBtn == 1 then
                 Gamestate.pop() --Retorna de onde parou
@@ -585,7 +604,7 @@ function pause:joystickpressed(joystick, button)
 end
 
 function pause:draw()
-    self.from:draw() -- Desenha o frame do estado anterior
+    self.previous:draw() -- Desenha o frame do estado anterior
     love.graphics.setColor(1, 1, 1)
     for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
         p:drawMe()

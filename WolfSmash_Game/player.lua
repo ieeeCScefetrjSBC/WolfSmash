@@ -4,7 +4,7 @@ local Timer = require "hump.timer"
 Player = {}
 Player.__index = Player
 
-function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, velX ,jumpForce, life, keyUp, keyLeft, keyRight)
+function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, velX ,jumpForce, keyUp, keyLeft, keyRight)
     local animBool = false
     local p = {}
     p.tag = tag --Importante para a detecção de Colisões
@@ -40,7 +40,7 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
     p.maxSpeed = 500
     p.velX = velX --Velocidade de locomoção pelo eixo X
     p.jumpForce = jumpForce * -1 --Força do Pulo (está negativo por conta do eixo Y crescer para baixo)
-    p.life = life --Vida do Player
+    p.life = 1 --Vida do Player
     p.isAlive = true
     p.touchingTheFloor = false --Está tocando o chão? true = sim
     p.setvectorBelowGround = {x = 0, y = -1}
@@ -67,6 +67,23 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
 
     return setmetatable(p, Player) --Retorna uma instância da Classe Player
 end
+
+function Player:resetPlayer(posX, posY)
+    self.life = 1 --Vida do Player
+    self.isAlive = true
+
+    self.status = {
+        walk = false,
+        jump = false,
+        right = true,
+    }
+    self.touchingTheFloor = false --Está tocando o chão? true = sim
+    self.crossedThePlatform = false -- Se passou por dentro da plataforma = true
+    self.touchingTheWall = false  --Está tocando a parede? true = sim
+    self.body:setPosition(posX , posY) --Define a nova posição do player
+end
+
+
 function Player:setMaxSpeedX() --Delimita a velocidade do player (eixoX) ao valor especificado
     local linVelX, linVelY = self.body:getLinearVelocity()
     if linVelX > self.maxSpeed then
@@ -84,6 +101,7 @@ function Player:update(dt)
     local linVelX, linVelY = self.body:getLinearVelocity()
 
     ----------------------Fricção do Player com o Chão---------------
+    print(self.touchingTheFloor)
     if (self.touchingTheFloor) then -- Se o Player estiver no chão
         local colisionFP = nil
         for i, c in pairs(self.contacts) do --percorre a lista de contatos
@@ -109,7 +127,6 @@ function Player:update(dt)
     --------Verifica se está morto----------
     if self.life <= 0 then --Se a vida do player for menor ou igual a 0
         self.isAlive = false
-        self.body:setActive(false) --Desativa o Player quando estiver morto
     end
     ----------------------------------------
 

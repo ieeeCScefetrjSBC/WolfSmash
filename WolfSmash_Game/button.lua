@@ -27,7 +27,6 @@ function Button:update(slctd) --Se slctd for true, quer dizer que o botão está
 end
 
 function Button:drawMe()
-    --love.graphics.setColor(self.colorActive)
     love.graphics.draw(self.imgActive , self.posX, self.posY, nil, 1/4, 1/4, self.width/2, self.height/2)
 end
 
