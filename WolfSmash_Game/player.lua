@@ -1,9 +1,11 @@
 local anim8 = require 'anim8'
+local Timer = require "hump.timer"
 -- Class Player
 Player = {}
 Player.__index = Player
 
 function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, velX ,jumpForce, life, keyUp, keyLeft, keyRight)
+    local animBool = false
     local p = {}
     p.tag = tag --Importante para a detecção de Colisões
     p.world = world
@@ -66,6 +68,7 @@ end
 
 function Player:update(dt)
     self.animation.current:update(dt)--Realiza a animação do Player
+    Timer.update(dt)
     self:setMaxSpeedX(500) --Define a velocidade máxima do player
     self.contacts = self.body:getContacts() -- Pega a lista dos contatos do Player
     local linVelX, linVelY = self.body:getLinearVelocity()
@@ -101,6 +104,7 @@ function Player:update(dt)
     ----------------------------------------
 
     ---------------Animação-----------------
+
     if (linVelX > 0) and (not self.status.right) then
         self.status.right = true
     elseif (linVelX < 0) and (self.status.right)then
@@ -109,6 +113,7 @@ function Player:update(dt)
 
     if self.status.right == true then
         if self.touchingTheFloor then
+            self.animBool = false
             if self.status.walk == true then
                 self.animation.current = self.animation.swalk
                 self.animation.current = self.animation.walk
@@ -117,12 +122,20 @@ function Player:update(dt)
             end
         else
             if self.status.jump then
-                self.animation.current = self.animation.jump
-                self.animation.current = self.animation.wjump
+                Timer.during(1.2, function(dt) if self.animBool == false then
+                    self.animation.current = self.animation.jump
+                    self.animation.current:gotoFrame(1)
+                    self.animation.current:resume()
+                    self.animBool = true
+                    end
+                    end, function(dt) self.animation.current = self.animation.wjump
+                    Timer.after(1.2, function() self.animation.current:gotoFrame(4) end)
+                    end)
             end
         end
     else
         if self.touchingTheFloor then
+            self.animBool = false
             if self.status.walk == true then
                 self.animation.current = self.animation.lswalk
                 self.animation.current = self.animation.lwalk
@@ -131,8 +144,15 @@ function Player:update(dt)
             end
         else
             if self.status.jump then
-                self.animation.current = self.animation.ljump
-                self.animation.current = self.animation.lwjump
+                Timer.during(1.2, function(dt) if self.animBool == false then
+                    self.animation.current = self.animation.ljump
+                    self.animation.current:gotoFrame(1)
+                    self.animation.current:resume()
+                    self.animBool = true
+                    end
+                    end, function(dt) self.animation.current = self.animation.lwjump
+                    Timer.after(1.2, function() self.animation.current:gotoFrame(4) end)
+                    end)
             end
         end
     end

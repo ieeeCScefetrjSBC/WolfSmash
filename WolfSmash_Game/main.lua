@@ -116,10 +116,16 @@ function selection:enter()
     self.lock = {false,false}
     self.selcBtn ={1,1} --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
-    options1 = { newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2 + 70, windowHeight/2), --botoes com os personagens para os dois Players
-                newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2 + 70, 70 + windowHeight/2)}
-    options2 = { newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 -70, windowHeight/2),
-                 newButton("imagens/Menu Inicia1.png","imagens/Menu Inicia2.png", windowWidth/2 -70, 70 + windowHeight/2)}
+    options1 = {    newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2 + 70, windowHeight/2), --botoes com os personagens para os dois Players
+                    newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2 + 70, 70 + windowHeight/2),
+                    newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 + 70, 140 + windowHeight/2)
+                }
+
+    options2 = {    newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 - 70, windowHeight/2),
+                    newButton("imagens/Menu Inicia1.png","imagens/Menu Inicia2.png", windowWidth/2 - 70, 70 + windowHeight/2),
+                    newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2 - 70, 140 + windowHeight/2)
+                }
+
     options = {options1, options2}
 end
 
@@ -148,10 +154,10 @@ function selection:update(dt) -- runs every frame
 
     -- Limita o os botões entre 1 e 2
     for i = 1, #self.selcBtn do
-        if self.selcBtn[i] > 2 then
+        if self.selcBtn[i] > 3 then
             self.selcBtn[i] = 1
         elseif self.selcBtn[i] < 1 then
-            self.selcBtn[i] = 2
+            self.selcBtn[i] = 3
         end
     end
 
@@ -282,11 +288,10 @@ function game:draw()
        p:drawMySprite()
     end
 
-    self.textoTemporario()
-
     for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista
        p:drawMe() --desenha o objeto na tela
     end
+    self.textoTemporario()
 end
 
 function game:textoTemporario()
