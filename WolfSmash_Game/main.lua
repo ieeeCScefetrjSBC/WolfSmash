@@ -19,8 +19,6 @@ function love.load()
     -- love.audio.setVolume(0.1) -- master volume
     love.mouse.setVisible(false) --Esconde o cursor da tela
     love.physics.setMeter(64) -- 1 metro = 64 pixels
-    world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
-    world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
     Gamestate.switch(menu)
 end
 
@@ -281,6 +279,9 @@ function game:init()
 end
 
 function game:enter(previous)
+
+    self.world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
+    self.world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
     self.joystickPauser = nil
     previous.previous.music:stop()
 
@@ -288,16 +289,16 @@ function game:enter(previous)
     self.lostRound = {play0 = 0, play1 = 0}
 
     players = {}
-    players.p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 300, "up", "left", "right") --cria um "player" definido no aquivo player.lua
-    players.p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], 425, 325, 700 , 300, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+    players.p0 = newPlayer("player0", self.world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 300, "up", "left", "right") --cria um "player" definido no aquivo player.lua
+    players.p1 = newPlayer("player1", self.world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], 425, 325, 700 , 300, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     objetos = {} --Lista de Objetos
-    objetos.ch1 = newFloor("Floor", world, windowWidth/2, 0, windowWidth, 50, nil)
-    objetos.ch2 = newFloor("Floor", world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
-    objetos.plt1 = newPlatform("Platform", world, windowWidth/2, windowHeight/2 - windowHeight*0.15, 150, 20, nil)
-    objetos.plt2 = newPlatform("Platform", world, windowWidth/2 + 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
-    objetos.plt3 = newPlatform("Platform", world, windowWidth/2 - 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
-    objetos.wl1 = newWall("Wall", world, windowWidth, windowHeight/2-25, 50, windowHeight)
-    objetos.wl2 = newWall("Wall", world, 0, windowHeight/2-50, 50, windowHeight)
+    objetos.ch1 = newFloor("Floor", self.world, windowWidth/2, 0, windowWidth, 50, nil)
+    objetos.ch2 = newFloor("Floor", self.world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
+    objetos.plt1 = newPlatform("Platform", self.world, windowWidth/2, windowHeight/2 - windowHeight*0.15, 150, 20, nil)
+    objetos.plt2 = newPlatform("Platform", self.world, windowWidth/2 + 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
+    objetos.plt3 = newPlatform("Platform", self.world, windowWidth/2 - 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
+    objetos.wl1 = newWall("Wall", self.world, windowWidth, windowHeight/2-25, 50, windowHeight)
+    objetos.wl2 = newWall("Wall", self.world, 0, windowHeight/2-50, 50, windowHeight)
     text = " "
     vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life
     round = "Player0 vitórias: ".. self.lostRound.play1 .."\nPlayer1 vitórias: " .. self.lostRound.play0
@@ -305,7 +306,7 @@ end
 
 function game:update(dt)
     self.music:play() -- play on awake
-    world:update(dt)
+    self.world:update(dt)
     for i, p in pairs(players) do --Percorre por todos os Players da Lista
         p:update(dt)
         if (not p.isAlive) then
@@ -597,7 +598,6 @@ function pause:enter(previous)
 end
 
 function pause:update(dt) -- runs every frame
-        self.music:play()
         -----Joystick
         if (joysticks[1] ~= nil) then --Se tiver joystick conectado
             if joystick == self.previous:getJoystickPauser() then
@@ -649,14 +649,12 @@ function pause:keypressed(key)
         if self.selcBtn == 1 then
             self.BSound:stop()  -- interrompe e toca de novo
             self.SBSound:play()
-
-            self.music:stop()
+            --self.background = love.graphics.setBackgroundColor(5/255, 155/255, 1)  --Azul - rgb(RED, GREEN, BLUE, ALPHA) só aceita valores entre 0 e 1 para cada campo ex: (255/255, 20/255, 60/255, 1)
             Gamestate.pop()
         elseif self.selcBtn == 2 then
             self.BSound:stop()  -- interrompe e toca de novo
             self.SBSound:play()
 
-            self.music:stop()
             Gamestate.switch(menu)
         end
     end
@@ -668,13 +666,11 @@ function pause:joystickpressed(joystick, button)
             if self.selcBtn == 1 then
                 self.BSound:stop()  -- interrompe e toca de novo
                 self.SBSound:play()
-                self.music:stop()
                 Gamestate.pop() --Retorna de onde parou
             elseif self.selcBtn == 2 then
                 self.BSound:stop()  -- interrompe e toca de novo
                 self.SBSound:play()
 
-                self.music:stop()
                 Gamestate.switch(menu) -- Vai para o Menu Inicial
             end
         end

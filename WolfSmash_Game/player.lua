@@ -130,10 +130,13 @@ function Player:update(dt)
         end
     end
     ---------------------------------------------------------------------
-
+  
     --------Verifica se está morto----------
     if self.life <= 0 then --Se a vida do player for menor ou igual a 0
         self.isAlive = false
+        for i, p in pairs(self.sounds) do
+                p:stop()
+        end
         self.sounds.death:play()
     end
     ----------------------------------------
