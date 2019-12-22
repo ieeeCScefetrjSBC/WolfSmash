@@ -18,6 +18,14 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
     p.image = love.graphics.newImage(pathImage)
     p.playerNumber = playerNumber
     local g = anim8.newGrid(64, 64, p.image:getWidth(), p.image:getHeight())
+    p.sounds = {
+      jump1 = love.audio.newSource("audio/SFX/jump1.ogg", "static"),
+      jump2 = love.audio.newSource("audio/SFX/jump2.ogg", "static"),
+      death = love.audio.newSource("audio/SFX/death.ogg", "static"),
+      impact1 = love.audio.newSource("audio/SFX/impact1.ogg", "static"),
+      impact2 = love.audio.newSource("audio/SFX/impact2.ogg", "static"),
+      explosion = love.audio.newSource("audio/SFX/explosion.ogg", "static")
+    }
     p.animation = {
         idle  = anim8.newAnimation(g('1-4',playerNumber), 0.1),
         jump  = anim8.newAnimation(g('5-8',playerNumber), 0.1),
@@ -101,7 +109,6 @@ function Player:update(dt)
     local linVelX, linVelY = self.body:getLinearVelocity()
 
     ----------------------Fricção do Player com o Chão---------------
-    print(self.touchingTheFloor)
     if (self.touchingTheFloor) then -- Se o Player estiver no chão
         local colisionFP = nil
         for i, c in pairs(self.contacts) do --percorre a lista de contatos
@@ -127,6 +134,7 @@ function Player:update(dt)
     --------Verifica se está morto----------
     if self.life <= 0 then --Se a vida do player for menor ou igual a 0
         self.isAlive = false
+        self.sounds.death:play()
     end
     ----------------------------------------
 
@@ -198,9 +206,17 @@ function Player:update(dt)
         local botaoB = self.joystick:isDown(2)
         if botaoB then
             if self.touchingTheFloor then
+                for i, p in pairs(self.sounds) do
+                   p:stop()
+                end
+                self.sounds.jump1:play()
                 self.body:applyLinearImpulse(0, self.jumpForce)
                 self.status.jump = true
             elseif ((self.touchingTheWall) and (not self.touchingTheFloor)) then
+                for i, p in pairs(self.sounds) do
+                    p:stop()
+                end
+                self.sounds.jump2:play()
                 self.body:setLinearVelocity(linVelX,-125) --A velocidade linear do player é setada pra -125 para que o impulso não fique muito forte.
                 self.body:applyLinearImpulse(150 * (self.wallJumpVector.x), self.jumpForce) --aplica o impulso no eixo X de 150 pro lado inverso do contato
                 self.status.jump = true
@@ -228,9 +244,17 @@ function Player:update(dt)
 
         if love.keyboard.isDown(self.keyboard.up) then
             if self.touchingTheFloor then
+                for i, p in pairs(self.sounds) do
+                    p:stop()
+                end
+                self.sounds.jump1:play()
                 self.body:applyLinearImpulse(0, self.jumpForce)
                 self.status.jump = true
             elseif ((self.touchingTheWall) and (not self.touchingTheFloor)) then
+                for i, p in pairs(self.sounds) do
+                    p:stop()
+                end
+                self.sounds.jump2:play()
                 self.body:setLinearVelocity(linVelX,-125) --A velocidade linear do player é setada pra -125 para que o impulso não fique muito forte.
                 self.body:applyLinearImpulse(400 * (self.wallJumpVector.x), self.jumpForce) --aplica o impulso no eixo X de 400 pro lado inverso do contato
                 self.status.jump = true

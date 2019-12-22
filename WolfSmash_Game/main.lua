@@ -16,6 +16,7 @@ selection = Gamestate.new()
 
 
 function love.load()
+    -- love.audio.setVolume(0.1) -- master volume
     love.mouse.setVisible(false) --Esconde o cursor da tela
     love.physics.setMeter(64) -- 1 metro = 64 pixels
     world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
@@ -41,6 +42,15 @@ function love.joystickpressed(joystick, button)
 end
 
 ----------------------------ESTADO MENU-------------------------------------------------
+function menu:init()
+    self.music = love.audio.newSource("audio/Music/screw_crew_menu.ogg", "stream") -- new audio source
+    self.music:setVolume(0.3)
+    self.BSound = love.audio.newSource("audio/SFX/other_buttons.ogg", "static") -- Som do botão
+    self.BSound:setVolume(0.5)
+    self.SBSound = love.audio.newSource("audio/SFX/play_button.ogg", "static")
+    self.SBSound:setVolume(0.5)
+end
+
 function menu:enter()
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
@@ -49,6 +59,8 @@ function menu:enter()
 end
 
 function menu:update(dt) -- runs every frame
+    self.music:play() -- play on awake
+
     -----Joystick
     if (joysticks ~= nil) then --Se tiver joystick conectado
         for i, j in pairs(joysticks) do --Percorre por todos os objetos da Lista
@@ -57,10 +69,14 @@ function menu:update(dt) -- runs every frame
             if(direcao ~= 0) then
                 if direcao > 0 then
                     self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                    self.BSound:stop()  -- interrompe e toca de novo
+                    self.BSound:play()
                     love.timer.sleep(0.1666)
                 elseif direcao < 0 then
                     self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
                     love.timer.sleep(0.1666)
+                    self.BSound:stop()  -- interrompe e toca de novo
+                    self.BSound:play()
                 end
             end
         end
@@ -85,11 +101,17 @@ end
 function menu:keypressed(key)
     if key == "up" or key == "w" then
         self.selcBtn = self.selcBtn - 1
+        self.BSound:stop()  -- interrompe e toca de novo
+        self.BSound:play()
     elseif key == "down" or key == "s" then
         self.selcBtn = self.selcBtn + 1
+        self.BSound:stop()  -- interrompe e toca de novo
+        self.BSound:play()
     end
     if key == "return" then
         if self.selcBtn == 1 then
+            self.BSound:stop()  -- interrompe e toca de novo
+            self.SBSound:play()
             Gamestate.switch(selection)
         elseif self.selcBtn == 2 then
             love.event.quit()
@@ -100,6 +122,8 @@ end
 function menu:joystickpressed(joystick, button)
     if button == 3 then -- A
         if self.selcBtn == 1 then
+            self.BSound:stop()  -- interrompe e toca de novo
+            self.SBSound:play()
             Gamestate.switch(selection)
         elseif self.selcBtn == 2 then
             love.event.quit()
@@ -115,7 +139,8 @@ function menu:draw()
 end
 
 ----------------------------ESTADO SELEÇÂO-------------------------------------------------
-function selection:enter()
+function selection:enter(previous)
+    self.previous = previous
     self.players = {nil, nil} --Selva os personagens selecionados pelos jogadores
     self.lock = {false,false}
     self.selcBtn ={1,1} --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
@@ -133,8 +158,8 @@ function selection:enter()
     options = {options1, options2}
 end
 
-
 function selection:update(dt) -- runs every frame
+    self.previous.music:play() -- play on awake
     if self.players[1] ~= nil and self.players[2] ~= nil then
         Gamestate.switch(game)
     end
@@ -142,14 +167,20 @@ function selection:update(dt) -- runs every frame
     --------------Joystick-------------------
     if (joysticks ~= nil) then --Se tiver joystick conectado
         for i, j in pairs(joysticks) do --Percorre por todos os objetos da Lista
-            local direcao = j:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
-            if(direcao ~= 0) then
-                if direcao > 0 then
-                    self.selcBtn[i] = self.selcBtn[i] + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
-                    love.timer.sleep(0.1666)
-                elseif direcao < 0 then
-                    self.selcBtn[i] = self.selcBtn[i] - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
-                    love.timer.sleep(0.1666)
+            if not self.lock[i] then
+                local direcao = j:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+                if(direcao ~= 0) then
+                    if direcao > 0 then
+                        self.selcBtn[i] = self.selcBtn[i] + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                        self.previous.BSound:stop()  -- interrompe e toca de novo
+                        self.previous.BSound:play()
+                        love.timer.sleep(0.1666)
+                    elseif direcao < 0 then
+                        self.selcBtn[i] = self.selcBtn[i] - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                        self.previous.BSound:stop()  -- interrompe e toca de novo
+                        self.previous.BSound:play()
+                        love.timer.sleep(0.1666)
+                    end
                 end
             end
         end
@@ -181,14 +212,22 @@ function selection:keypressed(key)
         if not lock then
             if i == 1 then
                 if key == "up" then
+                    self.previous.BSound:stop()  -- interrompe e toca de novo
+                    self.previous.BSound:play()
                     self.selcBtn[i] = self.selcBtn[i] - 1
                 elseif key == "down" then
+                    self.previous.BSound:stop()  -- interrompe e toca de novo
+                    self.previous.BSound:play()
                     self.selcBtn[i] = self.selcBtn[i] + 1
                 end
             elseif i == 2 then
                 if key == "w" then
+                    self.previous.BSound:stop()  -- interrompe e toca de novo
+                    self.previous.BSound:play()
                     self.selcBtn[i] = self.selcBtn[i] - 1
                 elseif key == "s" then
+                    self.previous.BSound:stop()  -- interrompe e toca de novo
+                    self.previous.BSound:play()
                     self.selcBtn[i] = self.selcBtn[i] + 1
                 end
             end
@@ -196,11 +235,15 @@ function selection:keypressed(key)
         for i, b in ipairs(self.selcBtn) do --Percorre pela lista selcBtn do Selection
             if i == 1 then
                 if key == "return" then
+                    self.previous.BSound:stop()  -- interrompe e toca de novo
+                    self.previous.SBSound:play()
                     self.players[i] = b
                     self.lock[i] = true
                 end
             elseif i == 2 then
                 if key == "f" then
+                    self.previous.BSound:stop()  -- interrompe e toca de novo
+                    self.previous.SBSound:play()
                     self.players[i] = b
                     self.lock[i] = true
                 end
@@ -213,6 +256,8 @@ function selection:joystickpressed(joystick, button)
     for i, joy in ipairs(joysticks) do --Percorre pela lista de joysticks conectado
         if joy == joystick then --Verifica qual joystick que apertou o botão
             if button == 3 then
+                self.previous.BSound:stop()  -- interrompe e toca de novo
+                self.previous.SBSound:play()
                 self.players[i] = self.selcBtn[i]
                 self.lock[i] = true
             end
@@ -230,35 +275,36 @@ end
 
 ----------------------------ESTADO GAME-------------------------------------------------
 function game:init()
+    self.music = love.audio.newSource("audio/Music/screw_crew_theme.ogg", "stream") -- new audio source
+    self.music:setVolume(0.3)
     self.background = love.graphics.newImage("imagens/Arena Background.png")
 end
 
 function game:enter(previous)
-    if self.previous == nil then
-         self.previous = previous
-        self.lostRound = {play0 = 0, play1 = 0}
-    else
-        self.previous = previous.previous
-        self.lostRound = previous.lostRound
-    end
-    players= {
-        p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 300, "up", "left", "right"), --cria um "player" definido no aquivo player.lua
-        p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], 425, 325, 700 , 300, "w", "a", "d") --cria um "player" definido no aquivo player.lua
-    }
+    self.joystickPauser = nil
+    previous.previous.music:stop()
+
+    self.previous = previous
+    self.lostRound = {play0 = 0, play1 = 0}
+
+    players = {}
+    players.p0 = newPlayer("player0", world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 300, "up", "left", "right") --cria um "player" definido no aquivo player.lua
+    players.p1 = newPlayer("player1", world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], 425, 325, 700 , 300, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     objetos = {} --Lista de Objetos
-    objetos.ch1 = newFloor("Floor", world, windowWidth/2, 25, windowWidth, 50, nil)
+    objetos.ch1 = newFloor("Floor", world, windowWidth/2, 0, windowWidth, 50, nil)
     objetos.ch2 = newFloor("Floor", world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
     objetos.plt1 = newPlatform("Platform", world, windowWidth/2, windowHeight/2 - windowHeight*0.15, 150, 20, nil)
     objetos.plt2 = newPlatform("Platform", world, windowWidth/2 + 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
     objetos.plt3 = newPlatform("Platform", world, windowWidth/2 - 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
-    objetos.wl1 = newWall("Wall", world, windowWidth-25, windowHeight/2-25, 50, windowHeight)
-    objetos.wl2 = newWall("Wall", world, 25, windowHeight/2-50, 50, windowHeight)
+    objetos.wl1 = newWall("Wall", world, windowWidth, windowHeight/2-25, 50, windowHeight)
+    objetos.wl2 = newWall("Wall", world, 0, windowHeight/2-50, 50, windowHeight)
     text = " "
     vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life
     round = "Player0 vitórias: ".. self.lostRound.play1 .."\nPlayer1 vitórias: " .. self.lostRound.play0
 end
 
 function game:update(dt)
+    self.music:play() -- play on awake
     world:update(dt)
     for i, p in pairs(players) do --Percorre por todos os Players da Lista
         p:update(dt)
@@ -532,8 +578,18 @@ function endContact(fxtrA, fxtrB, coll) -- Após o contato terminar
 end
 
 ----------------------------ESTADO PAUSE-------------------------------------------------
+function pause:init()
+  self.music = love.audio.newSource("audio/Music/screw_crew_menu.ogg", "stream") -- new audio source
+  self.music:setVolume(0.3)
+  self.BSound = love.audio.newSource("audio/SFX/other_buttons.ogg", "static") -- Som do botão
+  self.BSound:setVolume(0.5)
+  self.SBSound = love.audio.newSource("audio/SFX/play_button.ogg", "static")
+  self.SBSound:setVolume(0.5)
+end
+
 function pause:enter(previous)
     self.previous = previous -- salva o estado anterior
+    previous.music:pause()
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
     buttons = { newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2, windowHeight/2),
@@ -541,17 +597,24 @@ function pause:enter(previous)
 end
 
 function pause:update(dt) -- runs every frame
+        self.music:play()
         -----Joystick
         if (joysticks[1] ~= nil) then --Se tiver joystick conectado
-            local direcao = joysticks[1]:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+            if joystick == self.previous:getJoystickPauser() then
+                local direcao = joysticks[1]:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
 
-            if(direcao ~= 0) then
-                if direcao > 0 then
-                    self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
-                    love.timer.sleep(0.1666)
-                elseif direcao < 0 then
-                    self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
-                    love.timer.sleep(0.1666)
+                if(direcao ~= 0) then
+                    if direcao > 0 then
+                        self.BSound:stop()  -- interrompe e toca de novo
+                        self.BSound:play()
+                        self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                        love.timer.sleep(0.1666)
+                    elseif direcao < 0 then
+                        self.BSound:stop()  -- interrompe e toca de novo
+                        self.BSound:play()
+                        self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                        love.timer.sleep(0.1666)
+                    end
                 end
             end
         end
@@ -574,15 +637,26 @@ end
 
 function pause:keypressed(key)
     if key == "up" then
+        self.BSound:stop()  -- interrompe e toca de novo
+        self.BSound:play()
         self.selcBtn = self.selcBtn - 1
     elseif key == "down" then
+        self.BSound:stop()  -- interrompe e toca de novo
+        self.BSound:play()
         self.selcBtn = self.selcBtn + 1
     end
     if key == "return" then
         if self.selcBtn == 1 then
-            --self.background = love.graphics.setBackgroundColor(5/255, 155/255, 1)  --Azul - rgb(RED, GREEN, BLUE, ALPHA) só aceita valores entre 0 e 1 para cada campo ex: (255/255, 20/255, 60/255, 1)
+            self.BSound:stop()  -- interrompe e toca de novo
+            self.SBSound:play()
+
+            self.music:stop()
             Gamestate.pop()
         elseif self.selcBtn == 2 then
+            self.BSound:stop()  -- interrompe e toca de novo
+            self.SBSound:play()
+
+            self.music:stop()
             Gamestate.switch(menu)
         end
     end
@@ -592,8 +666,15 @@ function pause:joystickpressed(joystick, button)
     if joystick == self.previous:getJoystickPauser() then
         if button == 3 then -- A
             if self.selcBtn == 1 then
+                self.BSound:stop()  -- interrompe e toca de novo
+                self.SBSound:play()
+                self.music:stop()
                 Gamestate.pop() --Retorna de onde parou
             elseif self.selcBtn == 2 then
+                self.BSound:stop()  -- interrompe e toca de novo
+                self.SBSound:play()
+
+                self.music:stop()
                 Gamestate.switch(menu) -- Vai para o Menu Inicial
             end
         end
