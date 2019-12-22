@@ -232,19 +232,23 @@ function selection:keypressed(key)
         end
         for i, b in ipairs(self.selcBtn) do --Percorre pela lista selcBtn do Selection
             if i == 1 then
+              if (not self.lock[i]) then
                 if key == "return" then
                     self.previous.BSound:stop()  -- interrompe e toca de novo
                     self.previous.SBSound:play()
                     self.players[i] = b
                     self.lock[i] = true
                 end
+              end
             elseif i == 2 then
+              if (not self.lock[i]) then
                 if key == "f" then
                     self.previous.BSound:stop()  -- interrompe e toca de novo
                     self.previous.SBSound:play()
                     self.players[i] = b
                     self.lock[i] = true
                 end
+              end
             end
         end
     end
@@ -598,6 +602,7 @@ function pause:enter(previous)
 end
 
 function pause:update(dt) -- runs every frame
+        self.music:play()
         -----Joystick
         if (joysticks[1] ~= nil) then --Se tiver joystick conectado
             if joystick == self.previous:getJoystickPauser() then
@@ -649,12 +654,12 @@ function pause:keypressed(key)
         if self.selcBtn == 1 then
             self.BSound:stop()  -- interrompe e toca de novo
             self.SBSound:play()
-            --self.background = love.graphics.setBackgroundColor(5/255, 155/255, 1)  --Azul - rgb(RED, GREEN, BLUE, ALPHA) só aceita valores entre 0 e 1 para cada campo ex: (255/255, 20/255, 60/255, 1)
+            self.music:stop()
             Gamestate.pop()
         elseif self.selcBtn == 2 then
             self.BSound:stop()  -- interrompe e toca de novo
             self.SBSound:play()
-
+            self.music:stop()
             Gamestate.switch(menu)
         end
     end
@@ -666,11 +671,12 @@ function pause:joystickpressed(joystick, button)
             if self.selcBtn == 1 then
                 self.BSound:stop()  -- interrompe e toca de novo
                 self.SBSound:play()
+                self.music:stop()
                 Gamestate.pop() --Retorna de onde parou
             elseif self.selcBtn == 2 then
                 self.BSound:stop()  -- interrompe e toca de novo
                 self.SBSound:play()
-
+                self.music:stop()
                 Gamestate.switch(menu) -- Vai para o Menu Inicial
             end
         end

@@ -58,8 +58,20 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
 
     p.body = love.physics.newBody(p.world, posX , posY, "dynamic") --Cria o corpo dinamico na posição e mundo indicado
     p.body:setFixedRotation(true) --Faz o corpo não ficar girando
-    p.shape = love.physics.newRectangleShape(0, 0, 32,64)
-    p.fixture = love.physics.newFixture(p.body, p.shape, 2)
+
+    if playerNumber == 1 then
+        p.shape = love.physics.newRectangleShape(0, 0, 22,64)
+        p.fixture = love.physics.newFixture(p.body, p.shape, 2.5)
+    elseif playerNumber == 2 then
+        p.body:setGravityScale(2)
+        p.jumpForce = p.jumpForce*1.55
+        p.shape = love.physics.newRectangleShape(0, 5, 35,55)
+        p.fixture = love.physics.newFixture(p.body, p.shape, 2)
+    else
+        p.shape = love.physics.newRectangleShape(0, 5, 32,50)
+        p.fixture = love.physics.newFixture(p.body, p.shape, 2.4)
+    end
+
     p.fixture:setUserData(p) -- Salva a lista com os atributos do Player.
     p.contacts = p.body:getContacts() -- pega a lista dos contatos do corpo
     p.animation.current = p.animation.idle
@@ -130,7 +142,7 @@ function Player:update(dt)
         end
     end
     ---------------------------------------------------------------------
-  
+
     --------Verifica se está morto----------
     if self.life <= 0 then --Se a vida do player for menor ou igual a 0
         self.isAlive = false
@@ -225,14 +237,6 @@ function Player:update(dt)
                 self.status.jump = true
             end
         end
-        if self.playerNumber == 2 then
-            local botaoA = self.joystick:isDown(3)
-            if botaoA then
-                self.body:setGravityScale(4)
-            else
-                self.body:setGravityScale(1)
-            end
-        end
     else
         -----------Keyboard------------------
         if love.keyboard.isDown(self.keyboard.right) then
@@ -261,14 +265,6 @@ function Player:update(dt)
                 self.body:setLinearVelocity(linVelX,-125) --A velocidade linear do player é setada pra -125 para que o impulso não fique muito forte.
                 self.body:applyLinearImpulse(400 * (self.wallJumpVector.x), self.jumpForce) --aplica o impulso no eixo X de 400 pro lado inverso do contato
                 self.status.jump = true
-            end
-        end
-
-        if self.playerNumber == 2 then
-            if love.keyboard.isDown("s") then
-                self.body:setGravityScale(4)
-            else
-                self.body:setGravityScale(1)
             end
         end
         -------------------------------------------------
