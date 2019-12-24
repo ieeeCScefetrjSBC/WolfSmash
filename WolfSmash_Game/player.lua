@@ -100,7 +100,9 @@ function Player:resetPlayer(posX, posY)
     self.touchingTheFloor = false --Está tocando o chão? true = sim
     self.crossedThePlatform = false -- Se passou por dentro da plataforma = true
     self.touchingTheWall = false  --Está tocando a parede? true = sim
-    self.body:setPosition(posX , posY) --Define a nova posição do player
+    self.alx = love.math.random( 64, windowWidth -64)
+    self.aly = love.math.random( 64, windowHeight -64)
+    self.body:setPosition(self.alx , self.aly) --Define a nova posição do player
 end
 
 

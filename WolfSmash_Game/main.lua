@@ -12,6 +12,7 @@ menu = Gamestate.new()
 pause = Gamestate.new()
 game = Gamestate.new()
 selection = Gamestate.new()
+victory = Gamestate.new()
 
 
 
@@ -291,6 +292,7 @@ function game:enter(previous)
 
     self.previous = previous
     self.lostRound = {play0 = 0, play1 = 0}
+    self.maxRounds = 5
 
     players = {}
     players.p0 = newPlayer("player0", self.world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 300, "up", "left", "right") --cria um "player" definido no aquivo player.lua
@@ -330,6 +332,15 @@ function game:update(dt)
 
     vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life --Temporário
     round = "Player0 vitórias: ".. self.lostRound.play1 .."\nPlayer1 vitórias: " .. self.lostRound.play0
+    ---------------- ROUNDS --------------------
+      if self.lostRound.play1 == self.maxRounds then
+        winner = "P1"
+        Gamestate.switch(victory)
+      elseif self.lostRound.play0 == self.maxRounds then
+        winner = "P2"
+        Gamestate.switch(victory)
+      end
+    ------------------------------------------------
 end
 
 function game:keypressed(key)
@@ -692,4 +703,117 @@ function pause:draw()
     for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
         p:drawMe()
     end
+end
+
+---------------VICTORY--------------------------------
+
+function victory:init()
+  self.music = love.audio.newSource("audio/Music/screw_crew_menu.ogg", "stream") -- new audio source
+  self.music:setVolume(0.3)
+  self.BSound = love.audio.newSource("audio/SFX/other_buttons.ogg", "static") -- Som do botão
+  self.BSound:setVolume(0.5)
+  self.SBSound = love.audio.newSource("audio/SFX/play_button.ogg", "static")
+  self.SBSound:setVolume(0.5)
+end
+
+function victory:enter(previous)
+    self.previous = previous -- salva o estado anterior
+    previous.music:pause()
+    self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
+    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
+    buttons = { newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2, windowHeight/2),
+                newButton("imagens/Menu Inicia1.png","imagens/Menu Inicia2.png", windowWidth/2, 70 + windowHeight/2)}
+end
+
+function victory:update(dt) -- runs every frame
+        self.music:play()
+        -----Joystick
+        if (joysticks[1] ~= nil) then --Se tiver joystick conectado
+            if joystick == self.previous:getJoystickPauser() then
+                local direcao = joysticks[1]:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+
+                if(direcao ~= 0) then
+                    if direcao > 0 then
+                        self.BSound:stop()  -- interrompe e toca de novo
+                        self.BSound:play()
+                        self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                        love.timer.sleep(0.1666)
+                    elseif direcao < 0 then
+                        self.BSound:stop()  -- interrompe e toca de novo
+                        self.BSound:play()
+                        self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                        love.timer.sleep(0.1666)
+                    end
+                end
+            end
+        end
+        -------
+
+        if self.selcBtn > 2 then
+            self.selcBtn = 1
+        elseif self.selcBtn < 1 then
+            self.selcBtn = 2
+        end
+
+        for i, p in ipairs(buttons) do --Percorre por todos os Botoes da Lista
+            if i == self.selcBtn then
+                p:update(true)
+            else
+                p:update(false)
+            end
+        end
+end
+
+function victory:keypressed(key)
+    if key == "up" then
+        self.BSound:stop()  -- interrompe e toca de novo
+        self.BSound:play()
+        self.selcBtn = self.selcBtn - 1
+    elseif key == "down" then
+        self.BSound:stop()  -- interrompe e toca de novo
+        self.BSound:play()
+        self.selcBtn = self.selcBtn + 1
+    end
+    if key == "return" then
+        if self.selcBtn == 1 then
+            self.BSound:stop()  -- interrompe e toca de novo
+            self.SBSound:play()
+            self.music:stop()
+            Gamestate.switch(selection)
+        elseif self.selcBtn == 2 then
+            self.BSound:stop()  -- interrompe e toca de novo
+            self.SBSound:play()
+            self.music:stop()
+            Gamestate.switch(menu)
+        end
+    end
+end
+
+function victory:joystickpressed(joystick, button)
+    if joystick == self.previous:getJoystickPauser() then
+        if button == 3 then -- A
+            if self.selcBtn == 1 then
+                self.BSound:stop()  -- interrompe e toca de novo
+                self.SBSound:play()
+                self.music:stop()
+                Gamestate.switch(selection) --Retorna de onde parou
+            elseif self.selcBtn == 2 then
+                self.BSound:stop()  -- interrompe e toca de novo
+                self.SBSound:play()
+                self.music:stop()
+                Gamestate.switch(menu) -- Vai para o Menu Inicial
+            end
+        end
+    end
+end
+
+function victory:draw()
+
+    self.previous:draw() -- Desenha o frame do estado anterior
+    love.graphics.setColor(1, 1, 1)
+    for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
+        p:drawMe()
+    end
+      love.graphics.setColor(1,1,1)
+      love.graphics.print("VITORIA: " ..winner, windowWidth/2-200,windowHeight/2 - 150,0,5,5)
 end
