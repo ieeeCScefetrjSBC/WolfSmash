@@ -13,8 +13,7 @@ pause = Gamestate.new()
 game = Gamestate.new()
 selection = Gamestate.new()
 victory = Gamestate.new()
-
-
+mute = false
 
 function love.load()
     -- love.audio.setVolume(0.1) -- master volume
@@ -48,13 +47,17 @@ function menu:init()
     self.BSound:setVolume(0.5)
     self.SBSound = love.audio.newSource("audio/SFX/play_button.ogg", "static")
     self.SBSound:setVolume(0.5)
+    self.background = love.graphics.newImage("imagens/Menu/FundoMenu+Monitor+Logo.png")
 end
 
 function menu:enter()
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
-    buttons = { newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2, windowHeight/2),
-                newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2, 70 + windowHeight/2)}
+    buttons = { newButton("imagens/Menu/BotaoStartClaro.png","imagens/Menu/BotaoStartEscuro.png", windowWidth/2, windowHeight/2 + 60),
+                newButton("imagens/Menu/BotaoCreditsClaro.png","imagens/Menu/BotaoCreditsEscuro.png", windowWidth/2, windowHeight/2 + 60 + 72 + 24),
+                newButton("imagens/Menu/BotaoExitClaro.png","imagens/Menu/BotaoExitEscuro.png", windowWidth/2, windowHeight/2 + 60 + 72 + 24 + 9 + 54 + 24),
+                newButton("imagens/Menu/BotaoSomOnClaro.png","imagens/Menu/BotaoSomOnEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
+            }
 end
 
 function menu:update(dt) -- runs every frame
@@ -82,10 +85,10 @@ function menu:update(dt) -- runs every frame
     end
     -------
 
-    if self.selcBtn > 2 then
+    if self.selcBtn > 4 then
         self.selcBtn = 1
     elseif self.selcBtn < 1 then
-        self.selcBtn = 2
+        self.selcBtn = 4
     end
 
     for i, p in ipairs(buttons) do --Percorre por todos os Botoes da Lista
@@ -113,7 +116,19 @@ function menu:keypressed(key)
             self.SBSound:play()
             Gamestate.switch(selection)
         elseif self.selcBtn == 2 then
+
+        elseif self.selcBtn == 3 then
             love.event.quit()
+
+        elseif self.selcBtn == 4 then
+            mute = not mute
+            if mute then
+                love.audio.setVolume(0) -- master volume
+                buttons[4] = newButton("imagens/Menu/BotaoSomOffClaro.png","imagens/Menu/BotaoSomOffEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
+            else
+                love.audio.setVolume(1) -- master volume
+                buttons[4] = newButton("imagens/Menu/BotaoSomOnClaro.png","imagens/Menu/BotaoSomOnEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
+            end
         end
     end
 end
@@ -125,13 +140,26 @@ function menu:joystickpressed(joystick, button)
             self.SBSound:play()
             Gamestate.switch(selection)
         elseif self.selcBtn == 2 then
+
+        elseif self.selcBtn == 3 then
             love.event.quit()
+
+        elseif self.selcBtn == 4 then
+            mute = not mute
+            if mute then
+                love.audio.setVolume(0) -- master volume
+                buttons[4] = newButton("imagens/Menu/BotaoSomOffClaro.png","imagens/Menu/BotaoSomOffEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
+            else
+                love.audio.setVolume(1) -- master volume
+                buttons[4] = newButton("imagens/Menu/BotaoSomOnClaro.png","imagens/Menu/BotaoSomOnEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
+            end
         end
     end
 end
 
 function menu:draw()
     love.graphics.setColor( 1, 1, 1)-- Branco
+    love.graphics.draw(self.background, 0, 0)
     for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
         p:drawMe()
     end
@@ -309,8 +337,8 @@ function game:enter(previous)
     objetos.ch1 = newFloor("Floor", self.world, windowWidth/2, 0, windowWidth, 50, nil)
     objetos.ch2 = newFloor("Floor", self.world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
     objetos.plt1 = newPlatform("Platform", self.world, windowWidth/2, windowHeight/2 - windowHeight*0.15, 150, 20, nil)
-    objetos.plt2 = newPlatform("Platform", self.world, windowWidth/2 + 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
-    objetos.plt3 = newPlatform("Platform", self.world, windowWidth/2 - 200, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
+    objetos.plt2 = newPlatform("Platform", self.world, windowWidth/2 + 400, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
+    objetos.plt3 = newPlatform("Platform", self.world, windowWidth/2 - 400, windowHeight/2 + windowHeight*0.2, 150, 20, nil)
     objetos.wl1 = newWall("Wall", self.world, windowWidth, windowHeight/2-25, 50, windowHeight)
     objetos.wl2 = newWall("Wall", self.world, 0, windowHeight/2-50, 50, windowHeight)
     text = " "
@@ -377,14 +405,14 @@ function game:draw()
 
     for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista
         if p.tag == "Platform" then
-            p:drawMe() --desenha o objeto na tela
+            p:drawMySprite() --desenha o objeto na tela
         end
     end
     love.graphics.setColor( 1, 1, 1)-- Branco
 
     ------------Desenhar Contador de Round------------------------
-    love.graphics.draw(self.rounds[self.lostRound.play1 + 1], 35, 60, nil, 1.5, -1.5)
-    love.graphics.draw(self.rounds[self.lostRound.play0 + 1], windowWidth - 35, 60, nil, -1.5, -1.5)
+    love.graphics.draw(self.rounds[self.lostRound.play1 + 1], 35, 70, nil, 2, -2)
+    love.graphics.draw(self.rounds[self.lostRound.play0 + 1], windowWidth - 35, 70, nil, -2, -2)
     ----------------------------------------------------------------
     -- self.textoTemporario()
 end
