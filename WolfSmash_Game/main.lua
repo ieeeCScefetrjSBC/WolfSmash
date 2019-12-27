@@ -409,18 +409,17 @@ end
 function game:draw()
     love.graphics.setColor( 1, 1, 1)-- Branco
     love.graphics.draw(self.background, 0, 0)
-    for i,p in pairs(players) do --Desenha os Players da lista Player
-       p:drawMySprite()
-       -- p:drawMe()
-    end
 
     for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista
         if p.tag == "Platform" then
             p:drawMySprite() --desenha o objeto na tela
         end
     end
-    love.graphics.setColor( 1, 1, 1)-- Branco
-
+    
+    for i,p in pairs(players) do --Desenha os Players da lista Player
+       p:drawMySprite()
+       -- p:drawMe()
+    end
     ------------Desenhar Contador de Round------------------------
     love.graphics.draw(self.rounds[self.lostRound.play1 + 1], 35, 70, nil, 2, -2)
     love.graphics.draw(self.rounds[self.lostRound.play0 + 1], windowWidth - 35, 70, nil, -2, -2)
