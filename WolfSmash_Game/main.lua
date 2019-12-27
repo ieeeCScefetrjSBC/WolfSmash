@@ -662,16 +662,8 @@ function pause:enter(previous)
     previous.music:pause()
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
-    buttons = { newButton("imagens/Pause Botoes/ContinuePauseClaro.png","imagens/Pause Botoes/ContinuePauseEscuro.png", windowWidth/2, windowHeight/2),
-                newButton("imagens/Pause Botoes/MenuPauseClaro.png","imagens/Pause Botoes/MenuPauseEscuro.png", windowWidth/2, 72 + windowHeight/2 + 24)
-            }
-    if mute then
-        love.audio.setVolume(0) -- master volume
-        buttons[3] = newButton("imagens/Menu/BotaoSomOffClaro.png","imagens/Menu/BotaoSomOffEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
-    else
-        love.audio.setVolume(1) -- master volume
-        buttons[3] = newButton("imagens/Menu/BotaoSomOnClaro.png","imagens/Menu/BotaoSomOnEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
-    end
+    buttons = { newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2, windowHeight/2),
+                newButton("imagens/Menu Inicia1.png","imagens/Menu Inicia2.png", windowWidth/2, 70 + windowHeight/2)}
 end
 
 function pause:update(dt) -- runs every frame
@@ -698,10 +690,10 @@ function pause:update(dt) -- runs every frame
         end
         -------
 
-        if self.selcBtn > 3 then
+        if self.selcBtn > 2 then
             self.selcBtn = 1
         elseif self.selcBtn < 1 then
-            self.selcBtn = 3
+            self.selcBtn = 2
         end
 
         for i, p in ipairs(buttons) do --Percorre por todos os Botoes da Lista
@@ -734,15 +726,6 @@ function pause:keypressed(key)
             self.SBSound:play()
             self.music:stop()
             Gamestate.switch(menu)
-        elseif self.selcBtn == 3 then
-            mute = not mute
-            if mute then
-                love.audio.setVolume(0) -- master volume
-                buttons[3] = newButton("imagens/Menu/BotaoSomOffClaro.png","imagens/Menu/BotaoSomOffEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
-            else
-                love.audio.setVolume(1) -- master volume
-                buttons[3] = newButton("imagens/Menu/BotaoSomOnClaro.png","imagens/Menu/BotaoSomOnEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
-            end
         end
     end
 end
@@ -760,15 +743,6 @@ function pause:joystickpressed(joystick, button)
                 self.SBSound:play()
                 self.music:stop()
                 Gamestate.switch(menu) -- Vai para o Menu Inicial
-            elseif self.selcBtn == 3 then
-                mute = not mute
-                if mute then
-                    love.audio.setVolume(0) -- master volume
-                    buttons[3] = newButton("imagens/Menu/BotaoSomOffClaro.png","imagens/Menu/BotaoSomOffEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
-                else
-                    love.audio.setVolume(1) -- master volume
-                    buttons[3] = newButton("imagens/Menu/BotaoSomOnClaro.png","imagens/Menu/BotaoSomOnEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
-                end
             end
         end
         if button == 10 then
@@ -802,8 +776,8 @@ function victory:enter(previous)
     previous.music:pause()
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
-    buttons = { newButton("imagens/Pause Botoes/ContinuePauseClaro.png","imagens/Pause Botoes/ContinuePauseEscuro.png", windowWidth/2, windowHeight/2),
-                newButton("imagens/Pause Botoes/MenuPauseClaro.png","imagens/Pause Botoes/MenuPauseEscuro.png", windowWidth/2, 72 + windowHeight/2 + 24)}
+    buttons = { newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2, windowHeight/2),
+                newButton("imagens/Menu Inicia1.png","imagens/Menu Inicia2.png", windowWidth/2, 70 + windowHeight/2)}
 end
 
 function victory:update(dt) -- runs every frame
