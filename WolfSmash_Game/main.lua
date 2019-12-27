@@ -341,8 +341,8 @@ function game:enter(previous)
     self.maxRounds = 5
 
     players = {}
-    players.p0 = newPlayer("player0", self.world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 300, "up", "left", "right") --cria um "player" definido no aquivo player.lua
-    players.p1 = newPlayer("player1", self.world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], windowWidth - 325, 325, 700 , 300, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+    players.p0 = newPlayer("player0", self.world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 400, "up", "left", "right") --cria um "player" definido no aquivo player.lua
+    players.p1 = newPlayer("player1", self.world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], windowWidth - 325, 325, 700 , 400, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     objetos = {} --Lista de Objetos
     objetos.ch1 = newFloor("Floor", self.world, windowWidth/2, 0, windowWidth, 50, nil)
     objetos.ch2 = newFloor("Floor", self.world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
@@ -411,6 +411,7 @@ function game:draw()
     love.graphics.draw(self.background, 0, 0)
     for i,p in pairs(players) do --Desenha os Players da lista Player
        p:drawMySprite()
+       -- p:drawMe()
     end
 
     for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista

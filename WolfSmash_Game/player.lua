@@ -15,6 +15,11 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
         left = keyLeft,
         right = keyRight
     }
+    if p.tag == "player0" then
+      p.indicador = love.graphics.newImage("imagens/Player1Indicador.png")
+    else
+      p.indicador = love.graphics.newImage("imagens/Player2Indicador.png")
+    end
     p.image = love.graphics.newImage(pathImage)
     p.playerNumber = playerNumber
     local g = anim8.newGrid(64, 64, p.image:getWidth(), p.image:getHeight())
@@ -60,15 +65,13 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
     p.body:setFixedRotation(true) --Faz o corpo não ficar girando
 
     if playerNumber == 1 then
-        p.shape = love.physics.newRectangleShape(0, 0, 22,64)
+        p.shape = love.physics.newRectangleShape(6, 5, 22 *1.2,64 *1.2)
         p.fixture = love.physics.newFixture(p.body, p.shape, 2.5)
     elseif playerNumber == 2 then
-        p.body:setGravityScale(2)
-        p.jumpForce = p.jumpForce*1.55
-        p.shape = love.physics.newRectangleShape(0, 5, 35,55)
+        p.shape = love.physics.newRectangleShape(6, 11, 35 *1.2 ,55 *1.2)
         p.fixture = love.physics.newFixture(p.body, p.shape, 2)
     else
-        p.shape = love.physics.newRectangleShape(0, 5, 32,50)
+        p.shape = love.physics.newRectangleShape(6, 13, 32 *1.2,50 *1.2)
         p.fixture = love.physics.newFixture(p.body, p.shape, 2.4)
     end
 
@@ -80,9 +83,10 @@ function newPlayer(tag, world, joystick, pathImage, playerNumber, posX, posY, ve
         p.velX = 760
         p.maxSpeed = 600
     elseif playerNumber == 2 then -- Ultra-T
-
+        p.body:setGravityScale(2)
+        p.jumpForce = p.jumpForce*1.58
     elseif playerNumber == 3 then --Personagem de água
-        p.jumpForce = -380
+        p.jumpForce = p.jumpForce*1.3
     end
 
     return setmetatable(p, Player) --Retorna uma instância da Classe Player
@@ -275,12 +279,13 @@ end
 
 function Player:drawMySprite()
     if  self.isAlive then --Se o Player estiver vivo ele será desenhando na tela
-        self.animation.current:draw(self.image, self.body:getX() - 32, self.body:getY()-32)
-        if self.tag == "player0" then
-          love.graphics.print("P1",self.body:getX()-16,self.body:getY() - 60,0,2,2)
-        else
-          love.graphics.print("P2",self.body:getX()-16,self.body:getY() - 60,0,2,2)
-        end
+        self.animation.current:draw(self.image, self.body:getX() - 32, self.body:getY()-32, nil, 1.2, 1.2)
+        -- if self.tag == "player0" then
+        --   love.graphics.print("P1",self.body:getX()-16,self.body:getY() - 60,0,2,2)
+        -- else
+        --   love.graphics.print("P2",self.body:getX()-16,self.body:getY() - 60,0,2,2)
+        -- end
+        love.graphics.draw(self.indicador, self.body:getX() - 25,self.body:getY() - 23 - 64,nil, 0.4, 0.4)
     end
 end
 
