@@ -281,6 +281,14 @@ function game:init()
     self.music = love.audio.newSource("audio/Music/screw_crew_theme.ogg", "stream") -- new audio source
     self.music:setVolume(0.3)
     self.background = love.graphics.newImage("imagens/Arena Background.png")
+    self.rounds = {
+        love.graphics.newImage("imagens/LedsRound0.png"),
+        love.graphics.newImage("imagens/LedsRound1.png"),
+        love.graphics.newImage("imagens/LedsRound2.png"),
+        love.graphics.newImage("imagens/LedsRound3.png"),
+        love.graphics.newImage("imagens/LedsRound4.png"),
+        love.graphics.newImage("imagens/LedsRound5.png")
+    }
 end
 
 function game:enter(previous)
@@ -296,7 +304,7 @@ function game:enter(previous)
 
     players = {}
     players.p0 = newPlayer("player0", self.world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 300, "up", "left", "right") --cria um "player" definido no aquivo player.lua
-    players.p1 = newPlayer("player1", self.world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], 425, 325, 700 , 300, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+    players.p1 = newPlayer("player1", self.world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], windowWidth - 325, 325, 700 , 300, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     objetos = {} --Lista de Objetos
     objetos.ch1 = newFloor("Floor", self.world, windowWidth/2, 0, windowWidth, 50, nil)
     objetos.ch2 = newFloor("Floor", self.world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
@@ -365,13 +373,20 @@ function game:draw()
     love.graphics.draw(self.background, 0, 0)
     for i,p in pairs(players) do --Desenha os Players da lista Player
        p:drawMySprite()
-       p:drawMe()
     end
 
     for i, p in pairs(objetos) do --Percorre por todos os objetos da Lista
-       p:drawMe() --desenha o objeto na tela
+        if p.tag == "Platform" then
+            p:drawMe() --desenha o objeto na tela
+        end
     end
-    self.textoTemporario()
+    love.graphics.setColor( 1, 1, 1)-- Branco
+
+    ------------Desenhar Contador de Round------------------------
+    love.graphics.draw(self.rounds[self.lostRound.play1 + 1], 35, 60, nil, 1.5, -1.5)
+    love.graphics.draw(self.rounds[self.lostRound.play0 + 1], windowWidth - 35, 60, nil, -1.5, -1.5)
+    ----------------------------------------------------------------
+    -- self.textoTemporario()
 end
 
 function game:textoTemporario()

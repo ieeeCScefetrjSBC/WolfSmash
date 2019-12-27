@@ -276,6 +276,11 @@ end
 function Player:drawMySprite()
     if  self.isAlive then --Se o Player estiver vivo ele será desenhando na tela
         self.animation.current:draw(self.image, self.body:getX() - 32, self.body:getY()-32)
+        if self.tag == "player0" then
+          love.graphics.print("P1",self.body:getX()-16,self.body:getY() - 60,0,2,2)
+        else
+          love.graphics.print("P2",self.body:getX()-16,self.body:getY() - 60,0,2,2)
+        end
     end
 end
 
@@ -284,11 +289,6 @@ function Player:drawMe()
         love.graphics.setColor( 0 , 0 , 0, 0.3)
         love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints() ))
         love.graphics.setColor(1,1,1,1)
-        if self.tag == "player0" then
-          love.graphics.print("P1",self.body:getX()-16,self.body:getY() - 60,0,2,2)
-        else
-          love.graphics.print("P2",self.body:getX()-16,self.body:getY() - 60,0,2,2)
-        end
     end
 end
 
