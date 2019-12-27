@@ -55,9 +55,14 @@ function menu:enter()
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
     buttons = { newButton("imagens/Menu/BotaoStartClaro.png","imagens/Menu/BotaoStartEscuro.png", windowWidth/2, windowHeight/2 + 60),
                 newButton("imagens/Menu/BotaoCreditsClaro.png","imagens/Menu/BotaoCreditsEscuro.png", windowWidth/2, windowHeight/2 + 60 + 72 + 24),
-                newButton("imagens/Menu/BotaoExitClaro.png","imagens/Menu/BotaoExitEscuro.png", windowWidth/2, windowHeight/2 + 60 + 72 + 24 + 9 + 54 + 24),
-                newButton("imagens/Menu/BotaoSomOnClaro.png","imagens/Menu/BotaoSomOnEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
-            }
+                newButton("imagens/Menu/BotaoExitClaro.png","imagens/Menu/BotaoExitEscuro.png", windowWidth/2, windowHeight/2 + 60 + 72 + 24 + 9 + 54 + 24)}
+    if mute then
+        love.audio.setVolume(0) -- master volume
+        buttons[4] = newButton("imagens/Menu/BotaoSomOffClaro.png","imagens/Menu/BotaoSomOffEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
+    else
+        love.audio.setVolume(1) -- master volume
+        buttons[4] = newButton("imagens/Menu/BotaoSomOnClaro.png","imagens/Menu/BotaoSomOnEscuro.png", windowWidth - 180, windowHeight/2 + 60 + 72 + 24 + 3 + 54 + 24)
+    end
 end
 
 function menu:update(dt) -- runs every frame
@@ -166,6 +171,9 @@ function menu:draw()
 end
 
 ----------------------------ESTADO SELEÇÂO-------------------------------------------------
+function selection:init()
+    self.background = love.graphics.newImage("imagens/Menu/FundoMenu+Monitor.png")
+end
 function selection:enter(previous)
     self.previous = previous
     self.players = {nil, nil} --Selva os personagens selecionados pelos jogadores
@@ -297,6 +305,8 @@ function selection:joystickpressed(joystick, button)
 end
 
 function selection:draw()
+    love.graphics.setColor( 1, 1, 1)-- Branco
+    love.graphics.draw(self.background, 0, 0)
     for i, o in ipairs(options) do --Percorre por todas as Opções da Lista
         for j, b in ipairs(o) do --Percorre por todos os Botoes das Opções
             b:drawMe()
@@ -638,12 +648,13 @@ end
 
 ----------------------------ESTADO PAUSE-------------------------------------------------
 function pause:init()
-  self.music = love.audio.newSource("audio/Music/screw_crew_menu.ogg", "stream") -- new audio source
-  self.music:setVolume(0.3)
-  self.BSound = love.audio.newSource("audio/SFX/other_buttons.ogg", "static") -- Som do botão
-  self.BSound:setVolume(0.5)
-  self.SBSound = love.audio.newSource("audio/SFX/play_button.ogg", "static")
-  self.SBSound:setVolume(0.5)
+    self.background = love.graphics.newImage("imagens/Menu/MolduraMonitor.png")
+    self.music = love.audio.newSource("audio/Music/screw_crew_menu.ogg", "stream") -- new audio source
+    self.music:setVolume(0.3)
+    self.BSound = love.audio.newSource("audio/SFX/other_buttons.ogg", "static") -- Som do botão
+    self.BSound:setVolume(0.5)
+    self.SBSound = love.audio.newSource("audio/SFX/play_button.ogg", "static")
+    self.SBSound:setVolume(0.5)
 end
 
 function pause:enter(previous)
@@ -746,6 +757,7 @@ function pause:draw()
     for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
         p:drawMe()
     end
+    love.graphics.draw(self.background, 0, 0)
 end
 
 ---------------VICTORY--------------------------------
@@ -851,7 +863,6 @@ function victory:joystickpressed(joystick, button)
 end
 
 function victory:draw()
-
     self.previous:draw() -- Desenha o frame do estado anterior
     love.graphics.setColor(1, 1, 1)
     for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
