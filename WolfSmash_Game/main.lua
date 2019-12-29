@@ -415,7 +415,7 @@ function game:draw()
             p:drawMySprite() --desenha o objeto na tela
         end
     end
-    
+
     for i,p in pairs(players) do --Desenha os Players da lista Player
        p:drawMySprite()
        -- p:drawMe()
@@ -895,5 +895,9 @@ function victory:draw()
         p:drawMe()
     end
       love.graphics.setColor(1,1,1)
-      love.graphics.print("VITORIA: " ..winner, windowWidth/2-200,windowHeight/2 - 150,0,5,5)
+      if winner == "P1" then
+        love.graphics.draw(love.graphics.newImage("imagens/VictoryP1.png"), windowWidth/2-280,windowHeight/2 - 250,0,1,1)
+      elseif winner == "P2" then
+        love.graphics.draw(love.graphics.newImage("imagens/VictoryP2.png"), windowWidth/2-280,windowHeight/2 - 250,0,1,1)
+      end
 end
