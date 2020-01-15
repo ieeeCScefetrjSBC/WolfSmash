@@ -180,14 +180,14 @@ function selection:enter(previous)
     self.lock = {false,false}
     self.selcBtn ={1,1} --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
-    options1 = {    newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2 + 70, windowHeight/2), --botoes com os personagens para os dois Players
-                    newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2 + 70, 70 + windowHeight/2),
-                    newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 + 70, 140 + windowHeight/2)
+    options1 = {    newButton("imagens/Icones/Robo2.png","imagens/Icones/Robo2Escuro.png", windowWidth/2 + 128, windowHeight/2 - 128 - 25), --botoes com os personagens para os dois Players
+                    newButton("imagens/Icones/Robo3.png","imagens/Icones/Robo3Escuro.png", windowWidth/2 + 128, windowHeight/2),
+                    newButton("imagens/Icones/Robo4.png","imagens/Icones/Robo4Escuro.png", windowWidth/2 + 128, windowHeight/2 + 128 + 25)
                 }
 
-    options2 = {    newButton("imagens/Sprite-0001.png","imagens/Sprite-0002.png", windowWidth/2 - 70, windowHeight/2),
-                    newButton("imagens/Exit-0001.png","imagens/Exit-0002.png", windowWidth/2 - 70, 70 + windowHeight/2),
-                    newButton("imagens/Continue1.png","imagens/Continue2.png", windowWidth/2 - 70, 140 + windowHeight/2)
+    options2 = {    newButton("imagens/Icones/Robo2.png","imagens/Icones/Robo2Escuro.png", windowWidth/2 - 128, windowHeight/2 - 128 - 25),
+                    newButton("imagens/Icones/Robo3.png","imagens/Icones/Robo3Escuro.png", windowWidth/2 - 128, windowHeight/2),
+                    newButton("imagens/Icones/Robo4.png","imagens/Icones/Robo4Escuro.png", windowWidth/2 - 128, windowHeight/2 + 128 + 25)
                 }
 
     options = {options1, options2}
