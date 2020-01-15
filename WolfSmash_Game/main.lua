@@ -179,15 +179,15 @@ function selection:enter(previous)
     self.players = {nil, nil} --Selva os personagens selecionados pelos jogadores
     self.lock = {false,false}
     self.selcBtn ={1,1} --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
-    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
-    options1 = {    newButton("imagens/Icones/Robo2.png","imagens/Icones/Robo2Escuro.png", windowWidth/2 + 128, windowHeight/2 - 128 - 25), --botoes com os personagens para os dois Players
-                    newButton("imagens/Icones/Robo3.png","imagens/Icones/Robo3Escuro.png", windowWidth/2 + 128, windowHeight/2),
-                    newButton("imagens/Icones/Robo4.png","imagens/Icones/Robo4Escuro.png", windowWidth/2 + 128, windowHeight/2 + 128 + 25)
-                }
-
-    options2 = {    newButton("imagens/Icones/Robo2.png","imagens/Icones/Robo2Escuro.png", windowWidth/2 - 128, windowHeight/2 - 128 - 25),
+    self.joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
+    options1 = {    newButton("imagens/Icones/Robo2.png","imagens/Icones/Robo2Escuro.png", windowWidth/2 - 128, windowHeight/2 - 128 - 25),
                     newButton("imagens/Icones/Robo3.png","imagens/Icones/Robo3Escuro.png", windowWidth/2 - 128, windowHeight/2),
                     newButton("imagens/Icones/Robo4.png","imagens/Icones/Robo4Escuro.png", windowWidth/2 - 128, windowHeight/2 + 128 + 25)
+                }
+
+    options2 = {    newButton("imagens/Icones/Robo2.png","imagens/Icones/Robo2Escuro.png", windowWidth/2 + 128, windowHeight/2 - 128 - 25), --botoes com os personagens para os dois Players
+                    newButton("imagens/Icones/Robo3.png","imagens/Icones/Robo3Escuro.png", windowWidth/2 + 128, windowHeight/2),
+                    newButton("imagens/Icones/Robo4.png","imagens/Icones/Robo4Escuro.png", windowWidth/2 + 128, windowHeight/2 + 128 + 25)
                 }
 
     options = {options1, options2}
@@ -333,7 +333,8 @@ function game:enter(previous)
 
     self.world = love.physics.newWorld(0, 9.81 * 64 , true) -- (gravidade no eixo X, Graviade no exio Y, se o corpo pode ficar parado "sleep")
     self.world:setCallbacks(beginContact, endContact, preSolve, nil) --Detecta contatos no mundo
-    self.joystickPauser = nil
+    self.joystickPause = nil
+    self.joystickWinner = nil
     previous.previous.music:stop()
 
     self.previous = previous
@@ -341,8 +342,8 @@ function game:enter(previous)
     self.maxRounds = 5
 
     players = {}
-    players.p0 = newPlayer("player0", self.world, joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 400, "up", "left", "right") --cria um "player" definido no aquivo player.lua
-    players.p1 = newPlayer("player1", self.world, joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], windowWidth - 325, 325, 700 , 400, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+    players.p0 = newPlayer("player0", self.world, self.previous.joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 400, "up", "left", "right") --cria um "player" definido no aquivo player.lua
+    players.p1 = newPlayer("player1", self.world, self.previous.joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], windowWidth - 325, 325, 700 , 400, "w", "a", "d") --cria um "player" definido no aquivo player.lua
     objetos = {} --Lista de Objetos
     objetos.ch1 = newFloor("Floor", self.world, windowWidth/2, 0, windowWidth, 50, nil)
     objetos.ch2 = newFloor("Floor", self.world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
@@ -352,8 +353,6 @@ function game:enter(previous)
     objetos.wl1 = newWall("Wall", self.world, windowWidth, windowHeight/2-25, 50, windowHeight)
     objetos.wl2 = newWall("Wall", self.world, 0, windowHeight/2-50, 50, windowHeight)
     text = " "
-    vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life
-    round = "Player0 vitórias: ".. self.lostRound.play1 .."\nPlayer1 vitórias: " .. self.lostRound.play0
 end
 
 function game:update(dt)
@@ -376,14 +375,18 @@ function game:update(dt)
         text = " "
     end
 
-    vida = "Vida Player0: ".. players.p0.life .."\nVida Player1: " .. players.p1.life --Temporário
-    round = "Player0 vitórias: ".. self.lostRound.play1 .."\nPlayer1 vitórias: " .. self.lostRound.play0
     ---------------- ROUNDS --------------------
       if self.lostRound.play1 == self.maxRounds then
         winner = "P1"
+        if self.previous.joysticks[1] ~= nil then
+            self.joystickWinner = self.previous.joysticks[1]
+        end
         Gamestate.switch(victory)
       elseif self.lostRound.play0 == self.maxRounds then
         winner = "P2"
+        if self.previous.joysticks[2] ~= nil then
+            self.joystickWinner = self.previous.joysticks[2]
+        end
         Gamestate.switch(victory)
       end
     ------------------------------------------------
@@ -397,13 +400,9 @@ end
 
 function game:joystickpressed(joystick, button)
     if button == 10 then -- Start
-        self.joystickPauser = joystick
+        self.joystickPause = joystick
         Gamestate.push(pause)
     end
-end
-
-function game:getJoystickPauser()
-    return self.joystickPauser
 end
 
 function game:draw()
@@ -424,16 +423,12 @@ function game:draw()
     love.graphics.draw(self.rounds[self.lostRound.play1 + 1], 35, 70, nil, 2, -2)
     love.graphics.draw(self.rounds[self.lostRound.play0 + 1], windowWidth - 35, 70, nil, -2, -2)
     ----------------------------------------------------------------
-    -- self.textoTemporario()
+    self.textoTemporario()
 end
 
 function game:textoTemporario()
     love.graphics.setColor( 0, 0, 0)  --PRETO
     love.graphics.print(text, 10, 10)
-
-    love.graphics.setColor( 0, 0, 0)  --PRETO
-    love.graphics.print(vida, 500, 10)
-    love.graphics.print(round, 500, 35)
 
     love.graphics.print("FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 
@@ -661,7 +656,7 @@ function pause:enter(previous)
     self.previous = previous -- salva o estado anterior
     previous.music:pause()
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
-    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
+    joystickPause = self.previous.joystickPause
     buttons = { newButton("imagens/Pause Botoes/ContinuePauseClaro.png","imagens/Pause Botoes/ContinuePauseEscuro.png", windowWidth/2, windowHeight/2),
                 newButton("imagens/Pause Botoes/MenuPauseClaro.png","imagens/Pause Botoes/MenuPauseEscuro.png", windowWidth/2, 72 + windowHeight/2 + 24)
             }
@@ -677,9 +672,8 @@ end
 function pause:update(dt) -- runs every frame
         self.music:play()
         -----Joystick
-        if (joysticks[1] ~= nil) then --Se tiver joystick conectado
-            if joystick == self.previous:getJoystickPauser() then
-                local direcao = joysticks[1]:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+        if (joystickPause ~= nil) then --Se tiver joystick conectado
+                local direcao = joystickPause:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
 
                 if(direcao ~= 0) then
                     if direcao > 0 then
@@ -693,7 +687,6 @@ function pause:update(dt) -- runs every frame
                         self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
                         love.timer.sleep(0.1666)
                     end
-                end
             end
         end
         -------
@@ -748,7 +741,7 @@ function pause:keypressed(key)
 end
 
 function pause:joystickpressed(joystick, button)
-    if joystick == self.previous:getJoystickPauser() then
+    if joystick == joystickPause then
         if button == 3 then -- A
             if self.selcBtn == 1 then
                 self.BSound:stop()  -- interrompe e toca de novo
@@ -801,7 +794,7 @@ function victory:enter(previous)
     self.previous = previous -- salva o estado anterior
     previous.music:pause()
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
-    joysticks = love.joystick.getJoysticks() -- Pega a lista de Joysticks conectados
+    joystickWinner = self.previous.joystickWinner
     buttons = { newButton("imagens/Pause Botoes/ContinuePauseClaro.png","imagens/Pause Botoes/ContinuePauseEscuro.png", windowWidth/2, windowHeight/2),
                 newButton("imagens/Pause Botoes/MenuPauseClaro.png","imagens/Pause Botoes/MenuPauseEscuro.png", windowWidth/2, 72 + windowHeight/2 + 24)}
 end
@@ -810,8 +803,7 @@ function victory:update(dt) -- runs every frame
         self.music:play()
         -----Joystick
         if (joysticks[1] ~= nil) then --Se tiver joystick conectado
-            if joystick == self.previous:getJoystickPauser() then
-                local direcao = joysticks[1]:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+                local direcao = joystickWinner:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
 
                 if(direcao ~= 0) then
                     if direcao > 0 then
@@ -826,7 +818,6 @@ function victory:update(dt) -- runs every frame
                         love.timer.sleep(0.1666)
                     end
                 end
-            end
         end
         -------
 
@@ -871,7 +862,7 @@ function victory:keypressed(key)
 end
 
 function victory:joystickpressed(joystick, button)
-    if joystick == self.previous:getJoystickPauser() then
+    if joystick == joystickWinner then
         if button == 3 then -- A
             if self.selcBtn == 1 then
                 self.BSound:stop()  -- interrompe e toca de novo
