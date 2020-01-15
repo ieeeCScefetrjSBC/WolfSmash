@@ -795,14 +795,14 @@ function victory:enter(previous)
     previous.music:pause()
     self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
     joystickWinner = self.previous.joystickWinner
-    buttons = { newButton("imagens/Pause Botoes/ContinuePauseClaro.png","imagens/Pause Botoes/ContinuePauseEscuro.png", windowWidth/2, windowHeight/2),
-                newButton("imagens/Pause Botoes/MenuPauseClaro.png","imagens/Pause Botoes/MenuPauseEscuro.png", windowWidth/2, 72 + windowHeight/2 + 24)}
+    buttons = { newButton("imagens/Pause Botoes/ContinuePauseClaro.png","imagens/Pause Botoes/ContinuePauseEscuro.png", windowWidth/2, 108 + windowHeight/2),
+                newButton("imagens/Pause Botoes/MenuPauseClaro.png","imagens/Pause Botoes/MenuPauseEscuro.png", windowWidth/2, 108 + 72 + windowHeight/2 + 24)}
 end
 
 function victory:update(dt) -- runs every frame
         self.music:play()
         -----Joystick
-        if (joysticks[1] ~= nil) then --Se tiver joystick conectado
+        if (joystickWinner ~= nil) then --Se tiver joystick conectado
                 local direcao = joystickWinner:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
 
                 if(direcao ~= 0) then
@@ -887,8 +887,8 @@ function victory:draw()
     end
       love.graphics.setColor(1,1,1)
       if winner == "P1" then
-        love.graphics.draw(love.graphics.newImage("imagens/VictoryP1.png"), windowWidth/2-280,windowHeight/2 - 250,0,1,1)
+        love.graphics.draw(love.graphics.newImage("imagens/VictoryP1.png"), windowWidth/2-264,windowHeight/2 - 250)
       elseif winner == "P2" then
-        love.graphics.draw(love.graphics.newImage("imagens/VictoryP2.png"), windowWidth/2-280,windowHeight/2 - 250,0,1,1)
+        love.graphics.draw(love.graphics.newImage("imagens/VictoryP2.png"), windowWidth/2-264,windowHeight/2 - 250)
       end
 end
