@@ -423,7 +423,7 @@ function game:draw()
     love.graphics.draw(self.rounds[self.lostRound.play1 + 1], 35, 70, nil, 2, -2)
     love.graphics.draw(self.rounds[self.lostRound.play0 + 1], windowWidth - 35, 70, nil, -2, -2)
     ----------------------------------------------------------------
-    self.textoTemporario()
+    -- self.textoTemporario()
 end
 
 function game:textoTemporario()
