@@ -239,7 +239,7 @@ function Player:update(dt)
                 end
                 self.sounds.jump2:play()
                 self.body:setLinearVelocity(linVelX,-125) --A velocidade linear do player é setada pra -125 para que o impulso não fique muito forte.
-                self.body:applyLinearImpulse(150 * (self.wallJumpVector.x), self.jumpForce) --aplica o impulso no eixo X de 150 pro lado inverso do contato
+                self.body:applyLinearImpulse(400 * (self.wallJumpVector.x), self.jumpForce) --aplica o impulso no eixo X de 150 pro lado inverso do contato
                 self.status.jump = true
             end
         end
@@ -280,11 +280,6 @@ end
 function Player:drawMySprite()
     if  self.isAlive then --Se o Player estiver vivo ele será desenhando na tela
         self.animation.current:draw(self.image, self.body:getX() - 32, self.body:getY()-32, nil, 1.2, 1.2)
-        -- if self.tag == "player0" then
-        --   love.graphics.print("P1",self.body:getX()-16,self.body:getY() - 60,0,2,2)
-        -- else
-        --   love.graphics.print("P2",self.body:getX()-16,self.body:getY() - 60,0,2,2)
-        -- end
         love.graphics.draw(self.indicador, self.body:getX() - 25,self.body:getY() - 23 - 64,nil, 0.4, 0.4)
     end
 end

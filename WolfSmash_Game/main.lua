@@ -670,40 +670,40 @@ function pause:enter(previous)
 end
 
 function pause:update(dt) -- runs every frame
-        self.music:play()
-        -----Joystick
-        if (joystickPause ~= nil) then --Se tiver joystick conectado
-                local direcao = joystickPause:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
+    self.music:play()
+    -----Joystick
+    if (joystickPause ~= nil) then --Se tiver joystick conectado
+            local direcao = joystickPause:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
 
-                if(direcao ~= 0) then
-                    if direcao > 0 then
-                        self.BSound:stop()  -- interrompe e toca de novo
-                        self.BSound:play()
-                        self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
-                        love.timer.sleep(0.1666)
-                    elseif direcao < 0 then
-                        self.BSound:stop()  -- interrompe e toca de novo
-                        self.BSound:play()
-                        self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
-                        love.timer.sleep(0.1666)
-                    end
-            end
+            if(direcao ~= 0) then
+                if direcao > 0 then
+                    self.BSound:stop()  -- interrompe e toca de novo
+                    self.BSound:play()
+                    self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                    love.timer.sleep(0.1666)
+                elseif direcao < 0 then
+                    self.BSound:stop()  -- interrompe e toca de novo
+                    self.BSound:play()
+                    self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
+                    love.timer.sleep(0.1666)
+                end
         end
-        -------
+    end
+    -------
 
-        if self.selcBtn > 3 then
-            self.selcBtn = 1
-        elseif self.selcBtn < 1 then
-            self.selcBtn = 3
-        end
+    if self.selcBtn > 3 then
+        self.selcBtn = 1
+    elseif self.selcBtn < 1 then
+        self.selcBtn = 3
+    end
 
-        for i, p in ipairs(buttons) do --Percorre por todos os Botoes da Lista
-            if i == self.selcBtn then
-                p:update(true)
-            else
-                p:update(false)
-            end
+    for i, p in ipairs(buttons) do --Percorre por todos os Botoes da Lista
+        if i == self.selcBtn then
+            p:update(true)
+        else
+            p:update(false)
         end
+    end
 end
 
 function pause:keypressed(key)
