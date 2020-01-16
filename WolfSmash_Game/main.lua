@@ -13,6 +13,7 @@ pause = Gamestate.new()
 game = Gamestate.new()
 selection = Gamestate.new()
 victory = Gamestate.new()
+credits = Gamestate.new()
 mute = false
 
 function love.load()
@@ -145,7 +146,7 @@ function menu:joystickpressed(joystick, button)
             self.SBSound:play()
             Gamestate.switch(selection)
         elseif self.selcBtn == 2 then
-
+            Gamestate.switch(credits)
         elseif self.selcBtn == 3 then
             love.event.quit()
 
@@ -168,6 +169,34 @@ function menu:draw()
     for i, p in pairs(buttons) do --Percorre por todos os Botoes da Lista
         p:drawMe()
     end
+end
+
+----------------------------CREDITOS-------------------------------------------------
+function credits:init()
+    self.monitor = love.graphics.newImage("imagens/Menu/MolduraMonitorSBrilho.png")
+    self.text = love.graphics.newImage("imagens/Menu/Credits.png")
+end
+
+function credits:enter(previous)
+    previous.music:stop()
+end
+
+function credits:keypressed(key)
+    if key == 'escape' or key == 'p' then
+        Gamestate.switch(menu) -- Vai para o Menu Inicial
+    end
+end
+
+function credits:joystickpressed(joystick, button)
+    if button == 10 or button == 2 then -- Start
+        self.joystickPause = joystick
+        Gamestate.switch(menu) -- Vai para o Menu Inicial
+    end
+end
+
+function credits:draw()
+    love.graphics.draw(self.text, 85, 85)
+    love.graphics.draw(self.monitor, 0, 0)
 end
 
 ----------------------------ESTADO SELEÇÂO-------------------------------------------------
@@ -244,48 +273,50 @@ end
 
 function selection:keypressed(key)
     for i, lock in ipairs(self.lock) do --Percorre pela lista lock do Selection
-        if not lock then
-            if i == 1 then
-                if key == "up" then
-                    self.previous.BSound:stop()  -- interrompe e toca de novo
-                    self.previous.BSound:play()
-                    self.selcBtn[i] = self.selcBtn[i] - 1
-                elseif key == "down" then
-                    self.previous.BSound:stop()  -- interrompe e toca de novo
-                    self.previous.BSound:play()
-                    self.selcBtn[i] = self.selcBtn[i] + 1
-                end
-            elseif i == 2 then
-                if key == "w" then
-                    self.previous.BSound:stop()  -- interrompe e toca de novo
-                    self.previous.BSound:play()
-                    self.selcBtn[i] = self.selcBtn[i] - 1
-                elseif key == "s" then
-                    self.previous.BSound:stop()  -- interrompe e toca de novo
-                    self.previous.BSound:play()
-                    self.selcBtn[i] = self.selcBtn[i] + 1
+        if joysticks[i] == nil then
+            if not lock then
+                if i == 2 then
+                    if key == "up" then
+                        self.previous.BSound:stop()  -- interrompe e toca de novo
+                        self.previous.BSound:play()
+                        self.selcBtn[i] = self.selcBtn[i] - 1
+                    elseif key == "down" then
+                        self.previous.BSound:stop()  -- interrompe e toca de novo
+                        self.previous.BSound:play()
+                        self.selcBtn[i] = self.selcBtn[i] + 1
+                    end
+                elseif i == 1 then
+                    if key == "w" then
+                        self.previous.BSound:stop()  -- interrompe e toca de novo
+                        self.previous.BSound:play()
+                        self.selcBtn[i] = self.selcBtn[i] - 1
+                    elseif key == "s" then
+                        self.previous.BSound:stop()  -- interrompe e toca de novo
+                        self.previous.BSound:play()
+                        self.selcBtn[i] = self.selcBtn[i] + 1
+                    end
                 end
             end
-        end
-        for i, b in ipairs(self.selcBtn) do --Percorre pela lista selcBtn do Selection
-            if i == 1 then
-              if (not self.lock[i]) then
-                if key == "return" then
-                    self.previous.BSound:stop()  -- interrompe e toca de novo
-                    self.previous.SBSound:play()
-                    self.players[i] = b
-                    self.lock[i] = true
+            for i, b in ipairs(self.selcBtn) do --Percorre pela lista selcBtn do Selection
+                if i == 2 then
+                  if (not self.lock[i]) then
+                    if key == "return" then
+                        self.previous.BSound:stop()  -- interrompe e toca de novo
+                        self.previous.SBSound:play()
+                        self.players[i] = b
+                        self.lock[i] = true
+                    end
+                  end
+              elseif i == 1 then
+                  if (not self.lock[i]) then
+                    if key == "f" then
+                        self.previous.BSound:stop()  -- interrompe e toca de novo
+                        self.previous.SBSound:play()
+                        self.players[i] = b
+                        self.lock[i] = true
+                    end
+                  end
                 end
-              end
-            elseif i == 2 then
-              if (not self.lock[i]) then
-                if key == "f" then
-                    self.previous.BSound:stop()  -- interrompe e toca de novo
-                    self.previous.SBSound:play()
-                    self.players[i] = b
-                    self.lock[i] = true
-                end
-              end
             end
         end
     end
@@ -342,8 +373,8 @@ function game:enter(previous)
     self.maxRounds = 5
 
     players = {}
-    players.p0 = newPlayer("player0", self.world, self.previous.joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 400, "up", "left", "right") --cria um "player" definido no aquivo player.lua
-    players.p1 = newPlayer("player1", self.world, self.previous.joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], windowWidth - 325, 325, 700 , 400, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+    players.p0 = newPlayer("player0", self.world, self.previous.joysticks[1], "imagens/Spritsheet_Robots.png", self.previous.players[1], 325, 325, 700 , 400, "w", "a", "d") --cria um "player" definido no aquivo player.lua
+    players.p1 = newPlayer("player1", self.world, self.previous.joysticks[2], "imagens/Spritsheet_Robots.png", self.previous.players[2], windowWidth - 325, 325, 700 , 400, "up", "left", "right") --cria um "player" definido no aquivo player.lua
     objetos = {} --Lista de Objetos
     objetos.ch1 = newFloor("Floor", self.world, windowWidth/2, 0, windowWidth, 50, nil)
     objetos.ch2 = newFloor("Floor", self.world, windowWidth/2, windowHeight-25, windowWidth, 50, nil)
@@ -793,7 +824,7 @@ end
 function victory:enter(previous)
     self.previous = previous -- salva o estado anterior
     previous.music:pause()
-    self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado no Menu Inicial
+    self.selcBtn = 1 --selcBtn armazena o valor do botão que está selecionado
     joystickWinner = self.previous.joystickWinner
     buttons = { newButton("imagens/Pause Botoes/ContinuePauseClaro.png","imagens/Pause Botoes/ContinuePauseEscuro.png", windowWidth/2, 108 + windowHeight/2),
                 newButton("imagens/Pause Botoes/MenuPauseClaro.png","imagens/Pause Botoes/MenuPauseEscuro.png", windowWidth/2, 108 + 72 + windowHeight/2 + 24)}
@@ -837,26 +868,51 @@ function victory:update(dt) -- runs every frame
 end
 
 function victory:keypressed(key)
-    if key == "up" then
-        self.BSound:stop()  -- interrompe e toca de novo
-        self.BSound:play()
-        self.selcBtn = self.selcBtn - 1
-    elseif key == "down" then
-        self.BSound:stop()  -- interrompe e toca de novo
-        self.BSound:play()
-        self.selcBtn = self.selcBtn + 1
-    end
-    if key == "return" then
-        if self.selcBtn == 1 then
+    if winner == "P1" then
+        if key == "w" then
             self.BSound:stop()  -- interrompe e toca de novo
-            self.SBSound:play()
-            self.music:stop()
-            Gamestate.switch(selection)
-        elseif self.selcBtn == 2 then
+            self.BSound:play()
+            self.selcBtn = self.selcBtn - 1
+        elseif key == "s" then
             self.BSound:stop()  -- interrompe e toca de novo
-            self.SBSound:play()
-            self.music:stop()
-            Gamestate.switch(menu)
+            self.BSound:play()
+            self.selcBtn = self.selcBtn + 1
+        end
+        if key == "f" then
+            if self.selcBtn == 1 then
+                self.BSound:stop()  -- interrompe e toca de novo
+                self.SBSound:play()
+                self.music:stop()
+                Gamestate.switch(selection)
+            elseif self.selcBtn == 2 then
+                self.BSound:stop()  -- interrompe e toca de novo
+                self.SBSound:play()
+                self.music:stop()
+                Gamestate.switch(menu)
+            end
+        end
+    elseif winner == "P2" then
+        if key == "up" then
+            self.BSound:stop()  -- interrompe e toca de novo
+            self.BSound:play()
+            self.selcBtn = self.selcBtn - 1
+        elseif key == "down" then
+            self.BSound:stop()  -- interrompe e toca de novo
+            self.BSound:play()
+            self.selcBtn = self.selcBtn + 1
+        end
+        if key == "return" then
+            if self.selcBtn == 1 then
+                self.BSound:stop()  -- interrompe e toca de novo
+                self.SBSound:play()
+                self.music:stop()
+                Gamestate.switch(selection)
+            elseif self.selcBtn == 2 then
+                self.BSound:stop()  -- interrompe e toca de novo
+                self.SBSound:play()
+                self.music:stop()
+                Gamestate.switch(menu)
+            end
         end
     end
 end
@@ -868,7 +924,7 @@ function victory:joystickpressed(joystick, button)
                 self.BSound:stop()  -- interrompe e toca de novo
                 self.SBSound:play()
                 self.music:stop()
-                Gamestate.switch(selection) --Retorna de onde parou
+                Gamestate.switch(selection)
             elseif self.selcBtn == 2 then
                 self.BSound:stop()  -- interrompe e toca de novo
                 self.SBSound:play()
