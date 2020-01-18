@@ -14,7 +14,7 @@ game = Gamestate.new()
 selection = Gamestate.new()
 victory = Gamestate.new()
 credits = Gamestate.new()
-mute = true
+mute = false
 direcaoJoysticsXL = {0, 0}
 
 function love.load()
