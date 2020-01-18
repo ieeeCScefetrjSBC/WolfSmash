@@ -11,7 +11,7 @@ function love.conf(t)
     t.audio.mixwithsystem = true        -- Keep background music playing when opening LOVE (boolean, iOS and Android only)
 
     t.window.title = "Screw Them"    -- The window title (string)
-    t.window.icon = nil                 -- Filepath to an image to use as the window's icon (string)
+    t.window.icon = "imagens/Menu/Icon.png"                 -- Filepath to an image to use as the window's icon (string)
     t.window.width = 1368               -- The window width (number)
     t.window.height = 768               -- The window height (number)
     t.window.borderless = false         -- Remove all border visuals from the window (boolean)

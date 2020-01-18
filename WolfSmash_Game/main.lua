@@ -21,10 +21,18 @@ function love.load()
     -- love.audio.setVolume(0.1) -- master volume
     love.mouse.setVisible(false) --Esconde o cursor da tela
     love.physics.setMeter(64) -- 1 metro = 64 pixels
+    joysticks = love.joystick.getJoysticks()
     Gamestate.switch(menu)
 end
 
 function love.update(dt)
+  if joysticks ~= nil then
+      for i, joystick in ipairs(joysticks) do
+          if joystick:isDown(9) and joystick:isDown(10) then -- Faz o jogo fechar quando preciona Select + Start
+                love.event.quit()
+          end
+      end
+  end
     Timer.update(dt)
     Gamestate.update(dt)
 end
@@ -183,7 +191,7 @@ function credits:enter(previous)
 end
 
 function credits:keypressed(key)
-    if key == 'escape' or key == 'p' then
+    if key == 'escape' then
         Gamestate.switch(menu) -- Vai para o Menu Inicial
     end
 end
@@ -249,7 +257,6 @@ function selection:update(dt) -- runs every frame
         for i, j in pairs(joysticks) do --Percorre por todos os objetos da Lista
             if not self.lock[i] then
                 direcaoJoysticsXL[i] = j:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
-
             end
         end
     end
@@ -711,12 +718,12 @@ function pause:update(dt) -- runs every frame
             local direcao = joystickPause:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
 
             if(direcao ~= 0) then
-                if direcao > 0 then
+                if direcao > 0.5 then
                     self.BSound:stop()  -- interrompe e toca de novo
                     self.BSound:play()
                     self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
                     love.timer.sleep(0.1666)
-                elseif direcao < 0 then
+                elseif direcao < -0.5 then
                     self.BSound:stop()  -- interrompe e toca de novo
                     self.BSound:play()
                     self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
@@ -841,12 +848,12 @@ function victory:update(dt) -- runs every frame
                 local direcao = joystickWinner:getAxis(2) --Recebe o valor do eixo y do Analogico do fliperama
 
                 if(direcao ~= 0) then
-                    if direcao > 0 then
+                    if direcao > 0.5 then
                         self.BSound:stop()  -- interrompe e toca de novo
                         self.BSound:play()
                         self.selcBtn = self.selcBtn + 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
                         love.timer.sleep(0.1666)
-                    elseif direcao < 0 then
+                    elseif direcao < -0.5 then
                         self.BSound:stop()  -- interrompe e toca de novo
                         self.BSound:play()
                         self.selcBtn = self.selcBtn - 1 --A direção dos eixos do fliperama só recebem o valor de 1 ou -1
