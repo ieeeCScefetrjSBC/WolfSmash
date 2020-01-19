@@ -131,7 +131,7 @@ function menu:keypressed(key)
             self.SBSound:play()
             Gamestate.switch(selection)
         elseif self.selcBtn == 2 then
-
+            Gamestate.switch(credits)
         elseif self.selcBtn == 3 then
             love.event.quit()
 
