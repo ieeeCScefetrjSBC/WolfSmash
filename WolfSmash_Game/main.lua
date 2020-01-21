@@ -830,6 +830,10 @@ function victory:init()
   self.BSound:setVolume(0.5)
   self.SBSound = love.audio.newSource("audio/SFX/play_button.ogg", "static")
   self.SBSound:setVolume(0.5)
+
+  self.imgVictoryP1 = love.graphics.newImage("imagens/VictoryP1.png")
+  self.imgVictoryP2 = love.graphics.newImage("imagens/VictoryP2.png")
+
 end
 
 function victory:enter(previous)
@@ -954,8 +958,8 @@ function victory:draw()
     end
       love.graphics.setColor(1,1,1)
       if winner == "P1" then
-        love.graphics.draw(love.graphics.newImage("imagens/VictoryP1.png"), windowWidth/2-264,windowHeight/2 - 250)
+        love.graphics.draw(self.imgVictoryP2, windowWidth/2-264,windowHeight/2 - 250)
       elseif winner == "P2" then
-        love.graphics.draw(love.graphics.newImage("imagens/VictoryP2.png"), windowWidth/2-264,windowHeight/2 - 250)
+        love.graphics.draw(self.imgVictoryP2, windowWidth/2-264,windowHeight/2 - 250)
       end
 end
